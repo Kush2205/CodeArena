@@ -1,0 +1,11 @@
+@import "tailwindcss";
+@import "@repo/tailwind-config";
+
+* {
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none; 
+}
