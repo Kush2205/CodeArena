@@ -9,7 +9,11 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "gen-bp": "bun run apps/utils/generateBoilerplate.ts",
     "gen-bp-full": "bun run apps/utils/generateBoilerplateFull.ts",
-    "seed:db" : "bun run apps/utils/seedDatabase.ts"
+    "seed:db": "bun run apps/utils/seedDatabase.ts",
+    "create-contest": "bun run apps/utils/createContest.ts",
+    "prisma:generate" : "cd packages/db && bun prisma generate",
+    "prisma:migrate": "cd packages/db && bun prisma migrate dev",
+    "start:web" : "bun run prisma:migrate && bun run seed:db && bun run create-contest GfgContest-1 && cd apps/web && bun run start"
   },
   "devDependencies": {
     "@types/node": "^24.9.1",
@@ -24,5 +28,8 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "zustand": "^5.0.8"
+  }
 }

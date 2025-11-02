@@ -13,7 +13,11 @@
   "dependencies": {
     "@repo/db": "*",
     "@repo/ui": "*",
+    "@types/bcrypt": "^6.0.0",
     "axios": "^1.12.2",
+    "bcrypt": "^6.0.0",
+    "jose": "^6.1.0",
+    "lucide-react": "^0.552.0",
     "monaco-editor": "^0.54.0",
     "next": "^15.4.2",
     "react": "^19.1.0",
@@ -21,7 +25,6 @@
     "react-markdown": "^10.1.0",
     "rehype-highlight": "^7.0.2",
     "remark-gfm": "^4.0.1"
-    
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^15.4.6",

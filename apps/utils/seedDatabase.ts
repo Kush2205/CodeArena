@@ -45,15 +45,16 @@ async function seedDatabase() {
         if (stat.isDirectory()) {
             console.log(`Processing problem: ${problemName}`);
             const testCases = generateTestCases(problemName);
+            const limitedTestCases = testCases.slice(0, 3);
             const boilerplateCodes = await getBoilerPlateCodes(problemName);
-            console.log(testCases)
+            console.log(limitedTestCases)
 
             await prisma.problem.upsert({
                 where: { name: problemName },
                 update: {
                     testCases: {
                         deleteMany: {},
-                        create: testCases,
+                        create: limitedTestCases,
                     },
 
                     ...boilerplateCodes.reduce((acc, { language, code }) => {
@@ -67,7 +68,7 @@ async function seedDatabase() {
                 create: { 
                     name: problemName,
                     testCases: {
-                        create: testCases,
+                        create: limitedTestCases,
                     },
                 },
 

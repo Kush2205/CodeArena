@@ -13,14 +13,14 @@ int main(){
     string line_a;
     getline(cin, line_a);
     istringstream iss_a(line_a);
-    int num;
-    while(iss_a >> num) a.push_back(num);
+    int num_a;
+    while(iss_a >> num_a) a.push_back(num_a);
     vector<int> b;
     string line_b;
     getline(cin, line_b);
     istringstream iss_b(line_b);
-    int num;
-    while(iss_b >> num) b.push_back(num);
+    int num_b;
+    while(iss_b >> num_b) b.push_back(num_b);
 
     Solution solver;
     vector<int> result = solver.addTwoArrays(a, b);

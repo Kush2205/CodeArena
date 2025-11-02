@@ -51,16 +51,10 @@ export function generateFullCode(
 
     let boilerplateCode = fs.readFileSync(boilerplatePath, 'utf8')
 
-    // Remove BOM + hidden characters
-    boilerplateCode = boilerplateCode.replace(/^\uFEFF/, '').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-
-    // Clean user code as well
-    const cleanSource = source_code.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').trim()
-
     // Safely inject user code between markers
     const fullCode = boilerplateCode.replace(
         /(\/\/|#)\s*User Code Starts[\s\S]*?(\/\/|#)\s*User Code Ends/,
-        cleanSource
+        source_code
     )
 
     return fullCode

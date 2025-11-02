@@ -54,8 +54,8 @@ function generateCppFullBoilerplate(problem: Problem): string {
     string line_${i.name};
     getline(cin, line_${i.name});
     istringstream iss_${i.name}(line_${i.name});
-    ${elementType} num;
-    while(iss_${i.name} >> num) ${i.name}.push_back(num);`;
+    ${elementType} num_${i.name};
+    while(iss_${i.name} >> num_${i.name}) ${i.name}.push_back(num_${i.name});`;
         } else if (cppType === 'string') {
             return `    string ${i.name};\n    getline(cin, ${i.name});`;
         } else {
@@ -103,7 +103,11 @@ function generatePythonFullBoilerplate(problem: Problem): string {
     const needsTypingImport = inputs.some(i => i.type.endsWith('[]')) || returnType.endsWith('[]');
 
     const inputParsingCode = inputs.map(i => {
-        if (i.type.endsWith('[]')) return `    ${i.name} = list(map(int, input().strip().split()))`;
+        if (i.type.endsWith('[]')) {
+            const elementType = i.type.replace('[]', '');
+            const mapFunc = elementType === 'int' ? 'int' : elementType === 'float' || elementType === 'double' ? 'float' : elementType === 'string' ? 'str' : 'str';
+            return `    ${i.name} = list(map(${mapFunc}, input().strip().split()))`;
+        }
         if (i.type === 'int') return `    ${i.name} = int(input())`;
         if (i.type === 'float' || i.type === 'double') return `    ${i.name} = float(input())`;
         return `    ${i.name} = input()`;
@@ -144,7 +148,7 @@ function generateJavaFullBoilerplate(problem: Problem): string {
         String[] tokens_${i.name} = line_${i.name}.trim().split("\\\\s+");
         ${javaType} ${i.name} = new ${elementType}[tokens_${i.name}.length];
         for(int i=0;i<tokens_${i.name}.length;i++){
-            ${i.name}[i] = ${elementType==='String'?'tokens_'+i.name+'[i]':'Integer.parseInt(tokens_'+i.name+'[i])'};
+            ${i.name}[i] = ${elementType === 'String' ? 'tokens_' + i.name + '[i]' : elementType === 'int' ? 'Integer.parseInt(tokens_' + i.name + '[i])' : elementType === 'float' ? 'Float.parseFloat(tokens_' + i.name + '[i])' : elementType === 'double' ? 'Double.parseDouble(tokens_' + i.name + '[i])' : 'tokens_' + i.name + '[i]'};
         }`;
         } else if (javaType === 'String') return `        String ${i.name} = scanner.nextLine();`;
         else return `        ${javaType} ${i.name} = scanner.${javaType === 'int' ? 'nextInt()' : 'next'};`;
@@ -178,9 +182,9 @@ function generateJavaScriptFullBoilerplate(problem: Problem): string {
     const { functionName, inputs, output } = problem;
 
     const inputParsingCode = inputs.map((i, idx) => {
-        if (i.type.endsWith('[]')) return `const ${i.name} = tokens[${idx}].split(' ').map(x => parseInt(x));`;
-        if (['int', 'float', 'double'].includes(i.type)) return `const ${i.name} = parseInt(tokens[${idx}]);`;
-        return `const ${i.name} = tokens[${idx}];`;
+        if (i.type.endsWith('[]')) return `const ${i.name} = inputLines[${idx}].split(/\\s+/).map(x => parseInt(x));`;
+        if (['int', 'float', 'double'].includes(i.type)) return `const ${i.name} = parseInt(inputLines[${idx}]);`;
+        return `const ${i.name} = inputLines[${idx}];`;
     }).join('\n');
 
     const argsList = inputs.map(i => i.name).join(', ');
@@ -193,7 +197,7 @@ function generateJavaScriptFullBoilerplate(problem: Problem): string {
 
 const fs = require('fs');
 const inputRaw = fs.readFileSync(0, 'utf-8').trim().replace(/^"|"$/g, '');
-const tokens = inputRaw.length ? inputRaw.split(/\\s+/) : [];
+const inputLines = inputRaw.split('\\n').map(line => line.trim()).filter(line => line);
 
 ${inputParsingCode ? inputParsingCode + '\n' : ''}
 const solution = new Solution();

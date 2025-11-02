@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5431:5432
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile.web
+    ports:
+      - 3000:3000
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
+      - JUDGE0_URI=${JUDGE0_URI}
