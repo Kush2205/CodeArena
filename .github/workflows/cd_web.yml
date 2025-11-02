@@ -1,4 +1,4 @@
-name : Deploying Web App
+name : Deploying-Web-App
 on:
   push:
     branches: [main]
@@ -25,4 +25,3 @@ on:
             tags: |
               ${{ secrets.DOCKER_USERNAME }}/codearena-web:latest
               ${{ secrets.DOCKER_USERNAME }}/codearena-web:${{ github.sha }}
-              
