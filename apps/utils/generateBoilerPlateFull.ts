@@ -75,6 +75,22 @@ function generateCppFullBoilerplate(problem: Problem): string {
 #include <vector>
 #include <string>
 #include <sstream>
+#include <algorithm>
+#include <map>
+#include <unordered_map>
+#include <set>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <cmath>
+#include <climits>
+#include <cfloat>
+#include <cstring>
+#include <numeric>
+#include <functional>
+#include <utility>
 using namespace std;
 
 // User Code Starts
