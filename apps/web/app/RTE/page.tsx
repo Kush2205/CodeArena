@@ -2,6 +2,7 @@
 import { ProblemStatementWrapper } from "./components/ProblemStatementWrapper";
 import { CodeEditor } from "./components/CodeEditor";
 import TestCases from "./components/TestCases";
+import { ResizableLayout } from "./components/ResizableLayout";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -31,12 +32,10 @@ export default async function RTEPage({
   }
 
   return (
-    <div className="flex h-screen bg-neutral-900 text-neutral-200 overflow-hidden flex-col lg:flex-row">
-      <ProblemStatementWrapper problemName={problemName} contestId = {contestIdParam}/>
-      <div className="flex flex-1 flex-col overflow-hidden min-h-0">
-        <CodeEditor problemName={problemName} contestId={contestIdParam} />
-        <TestCases problemName={problemName} />
-      </div>
-    </div>
+    <ResizableLayout
+      leftPanel={<ProblemStatementWrapper problemName={problemName} contestId={contestIdParam} />}
+      topRightPanel={<CodeEditor problemName={problemName} contestId={contestIdParam} />}
+      bottomRightPanel={<TestCases problemName={problemName} />}
+    />
   );
 }

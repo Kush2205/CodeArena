@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateFullCode } from "../../../../../utils/generateFullCode";
-import { generateTestCases } from "../../../../../utils/generateTestCases";
+import { generateAllTestCases } from "../../../../../utils/generateTestCases";
 import prisma from "@repo/db/client";
 
 const languageIdMap: Record<string, number> = {
@@ -12,16 +12,16 @@ const languageIdMap: Record<string, number> = {
 
 const secret = process.env.JWT_SECRET || "secret";
 
-async function submitToJudge(payload: Record<string, unknown>) {
+async function submitBatchToJudge(submissions: Record<string, unknown>[]) {
   const response = await fetch(
-    `${process.env.JUDGE0_URI}/submissions?base64_encoded=true&wait=false`,
+    `${process.env.JUDGE0_URI}/submissions/batch?base64_encoded=true`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
         Accept: "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ submissions }),
     }
   );
 
@@ -31,9 +31,25 @@ async function submitToJudge(payload: Record<string, unknown>) {
   if (!response.ok) {
     const message =
       typeof data === "object" && data !== null ? JSON.stringify(data) : text;
-    throw new Error(`Judge0 submission failed: ${message || "Unknown error"}`);
+    throw new Error(`Judge0 batch submission failed: ${message || "Unknown error"}`);
   }
 
+  return data;
+}
+
+async function getBatchResults(tokens: string[]) {
+  const tokenString = tokens.join(',');
+  const response = await fetch(
+    `${process.env.JUDGE0_URI}/submissions/batch?tokens=${tokenString}&base64_encoded=true`,
+    {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    }
+  );
+
+  const data = await response.json();
   return data;
 }
 
@@ -62,26 +78,47 @@ export async function POST(req: NextRequest) {
     }
 
     const judgeCode = generateFullCode(source_code, language, problemName);
-    const testCases = generateTestCases(problemName);
+    // Use generateAllTestCases to get ALL test cases (including hidden ones) for judge submission
+    const testCases = generateAllTestCases(problemName);
 
-    const judgeSubmissions = await Promise.all(
-      testCases.map((testCase, index) => {
-        const payload = {
-          source_code: Buffer.from(judgeCode, 'utf8').toString('base64'),
-          language_id: languageIdMap[language],
-          stdin: Buffer.from(testCase.input, 'utf8').toString('base64'),
-          expected_output: Buffer.from(testCase.output, 'utf8').toString('base64'),
-          
-        };
+    // Create batch submission payload
+    const batchSubmissions = testCases.map((testCase, index) => ({
+      source_code: Buffer.from(judgeCode, 'utf8').toString('base64'),
+      language_id: languageIdMap[language],
+      stdin: Buffer.from(testCase.input, 'utf8').toString('base64'),
+      expected_output: Buffer.from(testCase.output, 'utf8').toString('base64'),
+      cpu_time_limit: 2,
+      memory_limit: 512000,
+    }));
 
-        console.log(`Judge0 payload #${index + 1}:`, payload);
-        return submitToJudge(payload);
-      })
-    );
+    console.log(`Submitting batch of ${batchSubmissions.length} test cases to Judge0`);
 
-    const tokens = judgeSubmissions.map(sub => sub.token);
+    // Submit all test cases as a batch
+    const batchResponse = await submitBatchToJudge(batchSubmissions);
+    
+    // Extract tokens from batch response
+    const tokens = batchResponse.map((sub: any) => sub.token);
+    
+    console.log(`Batch submission created with ${tokens.length} tokens`);
 
-    const submissionTokens = tokens.map(token => ({
+    // Wait a bit for Judge0 to process, then check for early failures (compilation errors)
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Check first test case for compilation errors
+    const firstTestResults = await getBatchResults([tokens[0]]);
+    const firstTestStatus = firstTestResults.submissions?.[0];
+    
+    let shouldHalt = false;
+    let haltReason = '';
+    
+    // Status ID 6 = Compilation Error
+    if (firstTestStatus?.status?.id === 6) {
+      shouldHalt = true;
+      haltReason = 'Compilation Error';
+      console.log(`Halting submission due to Compilation Error on first test case`);
+    }
+
+    const submissionTokens = tokens.map((token: string) => ({
       token,
       passed: false,
       status: "pending",
@@ -95,7 +132,7 @@ export async function POST(req: NextRequest) {
         submissionTokens: {
           create: submissionTokens,
         },
-        status: "pending",
+        status: shouldHalt ? "failed" : "pending",
         totalTestCases: testCases.length,
         language,
         code: source_code,
@@ -104,7 +141,13 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ 
       submissionId: submission.id,
-      message: "Submission created successfully"
+      message: shouldHalt 
+        ? `Submission halted due to ${haltReason}`
+        : "Submission created successfully",
+      halted: shouldHalt,
+      haltReason: shouldHalt ? haltReason : null,
+      testCasesSubmitted: tokens.length,
+      totalTestCases: testCases.length
     }, { status: 201 });
   
   } catch (error) {

@@ -81,14 +81,14 @@ function TestCases(props: Props) {
 
     if (loading) {
         return (
-            <div className="w-[50vw] h-full flex items-center justify-center bg-neutral-900 border-b border-neutral-800 lg:border-b-0 lg:border-r">
+            <div className="h-full flex items-center justify-center bg-neutral-900">
                 <p className="text-neutral-400">Loading test cases...</p>
             </div>
         );
     }
 
     return (
-        <div className="w-[50vw]  flex flex-col bg-neutral-900 border-b border-neutral-800 lg:border-b-0 lg:border-r">
+        <div className="h-full flex flex-col bg-neutral-900">
             <div className="flex border-b border-neutral-800 overflow-x-auto">
                 {zustandTestCases.map((tc: any, idx: number) => (
                     <button

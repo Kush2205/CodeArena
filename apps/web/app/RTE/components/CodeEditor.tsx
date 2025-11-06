@@ -59,6 +59,8 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
     const [boilerplates, setBoilerplates] = useState<BoilerplateResponse | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [isRunning, setIsRunning] = useState<boolean>(false);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     useEffect(() => {
         if (!editorContainerRef.current) return;
@@ -127,6 +129,8 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
                     automaticLayout: true,
                     minimap: { enabled: false },
                     fontSize: 14,
+                    scrollBeyondLastLine: false,
+                    padding: { top: 10, bottom: 10 },
                 });
             }
         });
@@ -225,13 +229,14 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
 
     const handleRunCode = async () => {
         const editor = monacoInstanceRef.current;
-        if (!editor) return;
+        if (!editor || isRunning) return;
         
         if(!localStorage.getItem('token')) {
             alert("Session expired. Please log in again.");
             return;
         }
 
+        setIsRunning(true);
         // Set all test cases to pending
         setAllStatus('pending');
 
@@ -281,6 +286,8 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
             console.error("Error running code:", error);
             alert("Failed to run code. Please try again.");
             setAllStatus(null);
+        } finally {
+            setIsRunning(false);
         }
     };
 
@@ -290,13 +297,14 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
 
     const submitCodeToJudge = async () => {
         const editor = monacoInstanceRef.current;
-        if (!editor) return;
+        if (!editor || isSubmitting) return;
         
         if(!localStorage.getItem('token')) {
             alert("Session expired. Please log in again.");
             return;
         }
 
+        setIsSubmitting(true);
         const code = editor.getValue();
         
         try {
@@ -326,13 +334,15 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
             console.error("Error submitting code:", error);
             alert("Failed to submit code. Please try again.");
             setSubmissionStatus('failed');
+            setIsSubmitting(false);
         }
     };
 
     const startPolling = async (submissionId: string) => {
-        const pollInterval = 2000; // Poll every 2 seconds
-        const maxPolls = 60; // Max 2 minutes of polling
+        let pollInterval = 1000; // Start with 1 second
+        const maxPolls = 90; // Max 3 minutes of polling
         let pollCount = 0;
+        let consecutiveCompletedPolls = 0;
 
         const poll = async () => {
             try {
@@ -351,32 +361,54 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
                     data.pendingTestCases
                 );
 
+                pollCount++;
+                console.log(`Poll ${pollCount}: ${data.pendingTestCases} pending, ${data.passedTestCases} passed, ${data.failedTestCases} failed`);
+
                 // If all tests are complete, stop polling
                 if (data.pendingTestCases === 0) {
-                    setSubmissionStatus('completed');
-                    console.log("All tests completed:", data);
-                    return;
+                    consecutiveCompletedPolls++;
+                    // Wait for 2 consecutive polls showing completion to ensure stability
+                    if (consecutiveCompletedPolls >= 2) {
+                        setSubmissionStatus('completed');
+                        setIsSubmitting(false);
+                        console.log("All tests completed:", data);
+                        return;
+                    }
+                } else {
+                    consecutiveCompletedPolls = 0;
+                }
+
+                // Adaptive polling: slow down after 20 polls
+                if (pollCount > 20 && pollInterval < 3000) {
+                    pollInterval = 3000; // Increase to 3 seconds after 20 polls
                 }
 
                 // Continue polling if tests are still pending
-                pollCount++;
                 if (pollCount < maxPolls) {
                     setTimeout(poll, pollInterval);
                 } else {
                     console.log("Polling timeout reached");
                     setSubmissionStatus('failed');
+                    setIsSubmitting(false);
                 }
             } catch (error) {
                 console.error("Error polling submission:", error);
-                setSubmissionStatus('failed');
+                // Retry once on error before failing
+                if (pollCount < 3) {
+                    setTimeout(poll, pollInterval * 2);
+                } else {
+                    setSubmissionStatus('failed');
+                    setIsSubmitting(false);
+                }
             }
         };
 
+        // Start polling immediately
         poll();
     };
 
     return (
-        <div className="flex flex-col flex-1 bg-[#1f1f20] overflow-hidden min-h-0">
+        <div className="flex flex-col h-full bg-[#1f1f20] overflow-hidden">
             <div className="flex items-center px-3 py-2 border-b border-neutral-800">
                 <div className="flex gap-2 items-center">
                     <label className="text-neutral-300 text-sm">Language:</label>
@@ -394,15 +426,47 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
                 </div>
 
                 <div className="flex flex-1 justify-center gap-3">
-                    <button onClick={handleRunCode}
-                        className={`px-6 py-2 text-sm lg:text-base rounded-xl bg-green-600 cursor-pointer hover:bg-green-700 transition-all text-white ${poppins.className}`}
+                    <button 
+                        onClick={handleRunCode}
+                        disabled={isRunning || isSubmitting}
+                        className={`px-6 py-2 text-sm lg:text-base rounded-xl bg-green-600 transition-all text-white ${poppins.className} ${
+                            isRunning || isSubmitting 
+                                ? 'opacity-50 cursor-not-allowed' 
+                                : 'cursor-pointer hover:bg-green-700'
+                        } flex items-center gap-2 justify-center min-w-[100px]`}
                     >
-                        Run
+                        {isRunning ? (
+                            <>
+                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Running...
+                            </>
+                        ) : (
+                            'Run'
+                        )}
                     </button>
-                    <button onClick={submitCodeToJudge}
-                        className={`px-6 py-2 text-sm lg:text-base rounded-xl bg-white cursor-pointer hover:bg-neutral-300 transition-all text-black ${poppins.className}`}
+                    <button 
+                        onClick={submitCodeToJudge}
+                        disabled={isRunning || isSubmitting}
+                        className={`px-6 py-2 text-sm lg:text-base rounded-xl bg-white transition-all text-black ${poppins.className} ${
+                            isRunning || isSubmitting 
+                                ? 'opacity-50 cursor-not-allowed' 
+                                : 'cursor-pointer hover:bg-neutral-300'
+                        } flex items-center gap-2 justify-center min-w-[100px]`}
                     >
-                        Submit
+                        {isSubmitting ? (
+                            <>
+                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Submitting...
+                            </>
+                        ) : (
+                            'Submit'
+                        )}
                     </button>
                 </div>
 
@@ -412,7 +476,7 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
                 </div>
             </div>
 
-            <div ref={editorContainerRef} className="flex-1 w-full min-h-0" />
+            <div ref={editorContainerRef} className="flex-1 w-full" style={{ minHeight: 0 }} />
         </div>
     );
 };

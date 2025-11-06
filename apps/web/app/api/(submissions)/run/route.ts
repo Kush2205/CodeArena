@@ -69,47 +69,62 @@ export async function POST(req: NextRequest) {
     // Take only first 3 test cases for "Run"
     const visibleTestCases = testCases.slice(0, 3);
 
-    // Submit all test cases with wait=true to get immediate results
-    const judgeSubmissions = await Promise.all(
-      visibleTestCases.map(async (testCase, index) => {
-        const payload = {
-          source_code: Buffer.from(judgeCode, 'utf8').toString('base64'),
-          language_id: languageIdMap[language],
-          stdin: Buffer.from(testCase.input, 'utf8').toString('base64'),
-          expected_output: Buffer.from(testCase.output, 'utf8').toString('base64'),
-          cpu_time_limit: 2,
-        };
+    // Submit test cases sequentially and halt on compilation error or TLE
+    const judgeSubmissions = [];
+    let shouldHalt = false;
 
-        console.log(`Judge0 run payload #${index + 1}:`, payload);
-        
-        // Submit with wait=true for immediate results
-        const submission = await submitToJudge(payload, true);
-        
-        // If wait=true, the response includes the result immediately
-        // Otherwise, we need to poll for the result
-        let result = submission;
-        
-        // If status is still in queue or processing, poll for result
-        if (submission.status?.id <= 2) {
-          // Wait a bit and fetch the result
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          result = await getSubmissionResult(submission.token);
-        }
+    for (let index = 0; index < visibleTestCases.length; index++) {
+      if (shouldHalt) break;
 
-        return {
-          testCaseId: index + 1,
-          input: testCase.input,
-          expectedOutput: testCase.output,
-          status: result.status?.description || 'Unknown',
-          statusId: result.status?.id,
-          stdout: result.stdout ? Buffer.from(result.stdout, 'base64').toString('utf8') : null,
-          stderr: result.stderr ? Buffer.from(result.stderr, 'base64').toString('utf8') : null,
-          compileOutput: result.compile_output ? Buffer.from(result.compile_output, 'base64').toString('utf8') : null,
-          time: result.time,
-          memory: result.memory,
-        };
-      })
-    );
+      const testCase = visibleTestCases[index];
+      if (!testCase) continue;
+
+      const payload = {
+        source_code: Buffer.from(judgeCode, 'utf8').toString('base64'),
+        language_id: languageIdMap[language],
+        stdin: Buffer.from(testCase.input, 'utf8').toString('base64'),
+        expected_output: Buffer.from(testCase.output, 'utf8').toString('base64'),
+        cpu_time_limit: 2,
+      };
+
+      console.log(`Judge0 run payload #${index + 1}:`, payload);
+      
+      // Submit with wait=true for immediate results
+      const submission = await submitToJudge(payload, true);
+      
+      // If wait=true, the response includes the result immediately
+      // Otherwise, we need to poll for the result
+      let result = submission;
+      
+      // If status is still in queue or processing, poll for result
+      if (submission.status?.id <= 2) {
+        // Wait a bit and fetch the result
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        result = await getSubmissionResult(submission.token);
+      }
+
+      const submissionResult = {
+        testCaseId: index + 1,
+        input: testCase.input,
+        expectedOutput: testCase.output,
+        status: result.status?.description || 'Unknown',
+        statusId: result.status?.id,
+        stdout: result.stdout ? Buffer.from(result.stdout, 'base64').toString('utf8') : null,
+        stderr: result.stderr ? Buffer.from(result.stderr, 'base64').toString('utf8') : null,
+        compileOutput: result.compile_output ? Buffer.from(result.compile_output, 'base64').toString('utf8') : null,
+        time: result.time,
+        memory: result.memory,
+      };
+
+      judgeSubmissions.push(submissionResult);
+
+      // Check if we should halt execution
+      // Status ID 6 = Compilation Error, 5 = Time Limit Exceeded
+      if (result.status?.id === 6 || result.status?.id === 5) {
+        shouldHalt = true;
+        console.log(`Halting execution due to ${result.status.description} on test case ${index + 1}`);
+      }
+    }
 
     // Process results to determine overall status
     const results = judgeSubmissions.map(result => {

@@ -2,4 +2,7 @@ Add-Two-Arrays
 Count-Even-Numbers
 Find-Maximum
 Reverse-Array
-Sum-Of-Arr
+Sum-Of-Array
+Count-Duplicates
+Subarray-With-Sum
+Two-Sum-Pairs
