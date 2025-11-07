@@ -5,7 +5,7 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import axios from "axios";
-import { useSubmissionStore } from "../../../store/submissionStore";
+import { useSubmissionStore } from "../../../../../../store/submissionStore";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 
 export const ProblemStatement = ({ content , contestId , problemName }: { content: string , contestId : string | undefined , problemName:string}) => {
@@ -17,10 +17,24 @@ export const ProblemStatement = ({ content , contestId , problemName }: { conten
     useEffect(() => {
         const getProblemId = () => {
             try {
-                const cachedProblems = localStorage.getItem(`problems_contest_${contestId}`);
+                const token = localStorage.getItem('token');
+                const cacheKeyBase = `problems_contest_${contestId}`;
+                const cacheKey = token ? `${cacheKeyBase}_${token}` : cacheKeyBase;
+                let cachedProblems = localStorage.getItem(cacheKey);
+                if (!cachedProblems && token) {
+                    cachedProblems = localStorage.getItem(cacheKeyBase);
+                }
                 if (cachedProblems) {
-                    const parsed = JSON.parse(cachedProblems);
-                    const problem = parsed.data.find((p: any) => p.name === problemName);
+                    const parsed = JSON.parse(cachedProblems) as {
+                        problems?: Array<{ id: number; name: string }>;
+                        data?: Array<{ id: number; name: string }>;
+                    };
+                    const cachedList = Array.isArray(parsed.problems)
+                        ? parsed.problems
+                        : Array.isArray(parsed.data)
+                            ? parsed.data
+                            : [];
+                    const problem = cachedList.find((p) => p.name === problemName);
                     if (problem) {
                         setProblemId(problem.id.toString());
                         return;

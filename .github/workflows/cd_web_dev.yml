@@ -41,4 +41,4 @@ jobs:
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/codearena-web-dev:latest
 
             sudo docker run -d --name codearena-web-dev -p 3000:3000 -e DATABASE_URL="${{ secrets.DATABASE_URL_DEV }}" -e JUDGE0_URI="${{ secrets.JUDGE0_URI_DEV }}" ${{ secrets.DOCKER_USERNAME }}/codearena-web-dev:latest
-            
+              

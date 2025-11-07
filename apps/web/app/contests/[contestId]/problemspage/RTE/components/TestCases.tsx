@@ -1,7 +1,7 @@
 "use client";
 import {useEffect, useState} from 'react';
 import axios from 'axios';
-import { useTestCaseStore } from '../../../store/testCaseStore';
+import { useTestCaseStore } from '../../../../../../store/testCaseStore';
 
 interface Props {
     problemName: string

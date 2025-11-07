@@ -64,6 +64,56 @@ export async function POST(req: NextRequest) {
 
     const { source_code, language, problemName, contestId } = await req.json();
 
+    const contestIdNumber =
+      contestId !== undefined && contestId !== null && contestId !== ""
+        ? Number(contestId)
+        : null;
+
+    if (contestIdNumber !== null && Number.isNaN(contestIdNumber)) {
+      return NextResponse.json({ error: "Invalid contest" }, { status: 400 });
+    }
+
+    if (contestIdNumber !== null) {
+      const contest = await prisma.contest.findUnique({
+        where: { id: contestIdNumber },
+        select: {
+          EndTime: true,
+        },
+      });
+
+      if (!contest) {
+        return NextResponse.json({ error: "Contest not found" }, { status: 404 });
+      }
+
+      const disqualification = await prisma.disqualified.findFirst({
+        where: {
+          userId,
+          contestId: contestIdNumber,
+          disqualified: true,
+        },
+      });
+
+      if (disqualification) {
+        return NextResponse.json(
+          {
+            error: "You have been disqualified from this contest and cannot submit code.",
+            code: "DISQUALIFIED",
+          },
+          { status: 403 }
+        );
+      }
+
+      if (contest.EndTime && new Date(contest.EndTime).getTime() <= Date.now()) {
+        return NextResponse.json(
+          {
+            error: "Contest has ended. Submissions are closed.",
+            code: "CONTEST_ENDED",
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     if (!languageIdMap[language]) {
       return NextResponse.json({ error: "Unsupported language" }, { status: 400 });
     }
@@ -128,7 +178,7 @@ export async function POST(req: NextRequest) {
       data: {
         userId: userId,
         problemId: problem.id,
-        contestId: contestId ? parseInt(contestId) : null,
+  contestId: contestIdNumber,
         submissionTokens: {
           create: submissionTokens,
         },

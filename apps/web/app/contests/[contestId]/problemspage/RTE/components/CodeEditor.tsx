@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type * as monacoType from "monaco-editor";
 import { Poppins } from "next/font/google";
 import axios from "axios";
-import { useTestCaseStore } from "../../../store/testCaseStore";
-import { useSubmissionStore } from "../../../store/submissionStore";
+import { useTestCaseStore } from "../../../../../../store/testCaseStore";
+import { useSubmissionStore } from "../../../../../../store/submissionStore";
 
 interface Props {
     problemName: string;
@@ -24,6 +24,13 @@ interface CachedBoilerplate {
     data: BoilerplateResponse;
     timestamp: number;
 }
+
+type ContestProblemsCache = {
+    problems?: Array<{ id: number; name: string; solved?: boolean }>;
+    data?: Array<{ id: number; name: string; solved?: boolean }>;
+    contest?: unknown;
+    timestamp: number;
+};
 
 const CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -61,6 +68,7 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
     const [error, setError] = useState<string | null>(null);
     const [isRunning, setIsRunning] = useState<boolean>(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [disqualificationMessage, setDisqualificationMessage] = useState<string | null>(null);
 
     useEffect(() => {
         if (!editorContainerRef.current) return;
@@ -236,6 +244,7 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
             return;
         }
 
+        setDisqualificationMessage(null);
         setIsRunning(true);
         // Set all test cases to pending
         setAllStatus('pending');
@@ -247,6 +256,7 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
                 source_code: code,
                 language: language,
                 problemName: problemName,
+                contestId: contestId ?? null,
             }, {
                 headers: {
                     'Authorization': localStorage.getItem('token') || '',
@@ -284,7 +294,16 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
             }
         } catch (error) {
             console.error("Error running code:", error);
-            alert("Failed to run code. Please try again.");
+            if (axios.isAxiosError(error)) {
+                const responseMessage = error.response?.data?.error;
+                if (error.response?.status === 403 && responseMessage) {
+                    setDisqualificationMessage(responseMessage);
+                } else {
+                    alert("Failed to run code. Please try again.");
+                }
+            } else {
+                alert("Failed to run code. Please try again.");
+            }
             setAllStatus(null);
         } finally {
             setIsRunning(false);
@@ -295,6 +314,63 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
     const setSubmissionStatus = useSubmissionStore(state => state.setStatus);
     const setSubmissionResults = useSubmissionStore(state => state.setResults);
 
+    const markProblemSolvedInCache = useCallback(() => {
+        if (!contestId) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const cacheKeyBase = `problems_contest_${contestId}`;
+            const cacheKey = token ? `${cacheKeyBase}_${token}` : cacheKeyBase;
+            const rawCache = localStorage.getItem(cacheKey) ?? (token ? localStorage.getItem(cacheKeyBase) : null);
+
+            if (!rawCache) {
+                return;
+            }
+
+            const parsed = JSON.parse(rawCache) as ContestProblemsCache;
+            const problemsList = Array.isArray(parsed.problems)
+                ? parsed.problems
+                : Array.isArray(parsed.data)
+                    ? parsed.data
+                    : [];
+
+            if (problemsList.length === 0) {
+                return;
+            }
+
+            let updated = false;
+            const updatedList = problemsList.map((problem) => {
+                if (problem.name === problemName) {
+                    updated = problem.solved === true ? updated : true;
+                    return { ...problem, solved: true };
+                }
+                return problem;
+            });
+
+            if (!updated) {
+                return;
+            }
+
+            parsed.timestamp = Date.now();
+            if (Array.isArray(parsed.problems)) {
+                parsed.problems = updatedList;
+            } else if (Array.isArray(parsed.data)) {
+                parsed.data = updatedList;
+            } else {
+                parsed.problems = updatedList;
+            }
+
+            localStorage.setItem(cacheKey, JSON.stringify(parsed));
+            if (token && cacheKey !== cacheKeyBase) {
+                localStorage.removeItem(cacheKeyBase);
+            }
+        } catch (error) {
+            console.warn('Failed to update contest problems cache after accepted submission', error);
+        }
+    }, [contestId, problemName]);
+
     const submitCodeToJudge = async () => {
         const editor = monacoInstanceRef.current;
         if (!editor || isSubmitting) return;
@@ -304,6 +380,7 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
             return;
         }
 
+        setDisqualificationMessage(null);
         setIsSubmitting(true);
         const code = editor.getValue();
         
@@ -314,7 +391,7 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
                 source_code: code,
                 language: language,
                 problemName: problemName,
-                contestId: contestId || null,
+                contestId: contestId ?? null,
             }, {
                 headers: {
                     'Authorization': localStorage.getItem('token') || '',
@@ -332,7 +409,16 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
             }
         } catch (error) {
             console.error("Error submitting code:", error);
-            alert("Failed to submit code. Please try again.");
+            if (axios.isAxiosError(error)) {
+                const responseMessage = error.response?.data?.error;
+                if (error.response?.status === 403 && responseMessage) {
+                    setDisqualificationMessage(responseMessage);
+                } else {
+                    alert("Failed to submit code. Please try again.");
+                }
+            } else {
+                alert("Failed to submit code. Please try again.");
+            }
             setSubmissionStatus('failed');
             setIsSubmitting(false);
         }
@@ -343,6 +429,7 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
         const maxPolls = 90; // Max 3 minutes of polling
         let pollCount = 0;
         let consecutiveCompletedPolls = 0;
+        let solvedMarked = false;
 
         const poll = async () => {
             try {
@@ -369,6 +456,11 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
                     consecutiveCompletedPolls++;
                     // Wait for 2 consecutive polls showing completion to ensure stability
                     if (consecutiveCompletedPolls >= 2) {
+                        const isAccepted = data.failedTestCases === 0;
+                        if (isAccepted && !solvedMarked) {
+                            markProblemSolvedInCache();
+                            solvedMarked = true;
+                        }
                         setSubmissionStatus('completed');
                         setIsSubmitting(false);
                         console.log("All tests completed:", data);
@@ -477,6 +569,21 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
             </div>
 
             <div ref={editorContainerRef} className="flex-1 w-full" style={{ minHeight: 0 }} />
+
+            {disqualificationMessage && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+                    <div className={`w-full max-w-sm rounded-2xl border border-neutral-700 bg-neutral-900 p-6 text-center shadow-xl ${poppins.className}`}>
+                        <h2 className="text-lg font-semibold text-white">Disqualified</h2>
+                        <p className="mt-3 text-sm text-neutral-300">{disqualificationMessage}</p>
+                        <button
+                            onClick={() => setDisqualificationMessage(null)}
+                            className="mt-6 w-full rounded-xl bg-white px-4 py-2 text-sm font-medium text-black hover:bg-neutral-300"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

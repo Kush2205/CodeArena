@@ -116,16 +116,42 @@ export async function GET(
     // Update submission status if all tests are complete
     let overallStatus = submission.status;
     if (pendingCount === 0) {
-      overallStatus = failedCount === 0 ? "completed" : "failed";
-      
+      const isAccepted = failedCount === 0;
+      overallStatus = isAccepted ? "completed" : "failed";
+
       await prisma.submission.update({
         where: { id: submissionId },
         data: {
           status: overallStatus,
           passedTestCases: passedCount,
-          verdict: failedCount === 0 ? "Accepted" : "Failed",
+          verdict: isAccepted ? "Accepted" : "Failed",
         },
       });
+
+      if (isAccepted) {
+        const contestContext = submission.contestId ?? null;
+        await (prisma as unknown as {
+          solvedProblem: {
+            upsert: (args: unknown) => Promise<void>;
+          };
+        }).solvedProblem.upsert({
+          where: {
+            userId_problemId_contestId: {
+              userId: submission.userId,
+              problemId: submission.problemId,
+              contestId: contestContext,
+            },
+          },
+          create: {
+            userId: submission.userId,
+            problemId: submission.problemId,
+            contestId: contestContext,
+          },
+          update: {
+            solvedAt: new Date(),
+          },
+        });
+      }
     }
 
     return NextResponse.json({
