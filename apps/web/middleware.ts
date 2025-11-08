@@ -6,7 +6,7 @@ const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'secret');
 export async function middleware(request: NextRequest) {
     const token = request.headers.get('Authorization');
     
-    const protectedPaths = ['/api/submission', '/api/fetchSubmissions', '/api/run', '/api/violation', '/api/violation/disqualification'];
+    const protectedPaths = ['/api/submission', '/api/fetchSubmissions', '/api/run', '/api/violation', '/api/violation/disqualification', '/api/user/stats'];
     const isProtected = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path));
     
     if (isProtected) {
@@ -70,5 +70,6 @@ export const config = {
         '/api/run/:path*',
         '/api/violation/:path*',
         '/api/violation/disqualification/:path*',
+        '/api/user/stats/:path*',
     ],
 };

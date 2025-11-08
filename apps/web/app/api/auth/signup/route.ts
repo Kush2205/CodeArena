@@ -22,16 +22,17 @@ export async function POST(req: NextRequest) {
                 name,
                 email,
                 password: hashedPassword,
+                role: "user", // Default role
             },
         });
 
         const secret = new TextEncoder().encode(process.env.JWT_SECRET as string || "secret");
-        const token = await new SignJWT({ userId: newUser.id, email: newUser.email })
+        const token = await new SignJWT({ userId: newUser.id, email: newUser.email, role: newUser.role })
             .setProtectedHeader({ alg: 'HS256' })
             .setExpirationTime('7d')
             .sign(secret);
 
-        return NextResponse.json({ message: "User created successfully", userId: newUser.id, token }, { status: 201 });
+        return NextResponse.json({ message: "User created successfully", userId: newUser.id, role: newUser.role, token }, { status: 201 });
     } catch (error) {
         console.error("Error during sign up:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

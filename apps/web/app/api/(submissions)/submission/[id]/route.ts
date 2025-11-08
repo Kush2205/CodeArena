@@ -19,10 +19,10 @@ async function getBatchSubmissionResults(tokens: string[]) {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const submissionId = params.id;
+    const { id: submissionId } = await params;
 
     const submission = await prisma.submission.findUnique({
       where: { id: submissionId },
@@ -115,21 +115,95 @@ export async function GET(
 
     // Update submission status if all tests are complete
     let overallStatus = submission.status;
+    let points = 0;
+    let newTestCasesPassed = 0;
+
     if (pendingCount === 0) {
       const isAccepted = failedCount === 0;
       overallStatus = isAccepted ? "completed" : "failed";
 
-      await prisma.submission.update({
-        where: { id: submissionId },
-        data: {
-          status: overallStatus,
-          passedTestCases: passedCount,
-          verdict: isAccepted ? "Accepted" : "Failed",
-        },
-      });
+      const contestContext = submission.contestId ?? null;
 
+      // Only calculate and award points if this submission hasn't been processed yet
+      // (points are 0 in the database for unprocessed submissions)
+      if (submission.points === 0) {
+        // Get all test cases that passed in this submission
+        const passedTestCaseNumbers = results
+          .filter((r: any) => r.status === "passed")
+          .map((r: any) => r.testCaseNumber);
+
+        if (passedTestCaseNumbers.length > 0) {
+          // Find which test cases were already passed before
+          const alreadyPassedTestCases = await prisma.passedTestCase.findMany({
+            where: {
+              userId: submission.userId,
+              problemId: submission.problemId,
+              contestId: contestContext,
+              testCaseNumber: {
+                in: passedTestCaseNumbers,
+              },
+            },
+            select: {
+              testCaseNumber: true,
+            },
+          });
+
+          const alreadyPassedNumbers = new Set(
+            alreadyPassedTestCases.map((tc) => tc.testCaseNumber)
+          );
+
+          // Find newly passed test cases
+          const newlyPassedTestCases = passedTestCaseNumbers.filter(
+            (num: number) => !alreadyPassedNumbers.has(num)
+          );
+
+          newTestCasesPassed = newlyPassedTestCases.length;
+
+          // Award points only for newly passed test cases (10 points each)
+          points = newTestCasesPassed * 10;
+
+          // Record the newly passed test cases
+          if (newlyPassedTestCases.length > 0) {
+            await prisma.passedTestCase.createMany({
+              data: newlyPassedTestCases.map((testCaseNumber: number) => ({
+                userId: submission.userId,
+                problemId: submission.problemId,
+                contestId: contestContext,
+                testCaseNumber,
+              })),
+              skipDuplicates: true,
+            });
+          }
+        }
+
+        await prisma.submission.update({
+          where: { id: submissionId },
+          data: {
+            status: overallStatus,
+            passedTestCases: passedCount,
+            points: points,
+            verdict: isAccepted ? "Accepted" : "Failed",
+          },
+        });
+      } else {
+        // Submission already processed, just use stored values
+        points = submission.points;
+        // We don't have newTestCasesPassed stored, so we can't show it
+        // But we know if points > 0, then new test cases were passed
+        newTestCasesPassed = points > 0 ? passedCount : 0;
+        
+        await prisma.submission.update({
+          where: { id: submissionId },
+          data: {
+            status: overallStatus,
+            passedTestCases: passedCount,
+            verdict: isAccepted ? "Accepted" : "Failed",
+          },
+        });
+      }
+
+      // Mark problem as solved if all test cases passed
       if (isAccepted) {
-        const contestContext = submission.contestId ?? null;
         await (prisma as unknown as {
           solvedProblem: {
             upsert: (args: unknown) => Promise<void>;
@@ -161,6 +235,10 @@ export async function GET(
       passedTestCases: passedCount,
       failedTestCases: failedCount,
       pendingTestCases: pendingCount,
+      points: points,
+      pointsAwarded: points > 0,
+      newTestCasesPassed: newTestCasesPassed,
+      alreadySolved: pendingCount === 0 && passedCount > 0 && newTestCasesPassed === 0,
       results,
     });
   } catch (error) {

@@ -15,9 +15,12 @@ async function getBoilerPlateCodes(problemName: string) {
      const boilerplateCodes: { language: string; code: string }[] = [];
         for (const file of files) {
             const filePath = path.join(boilerplateDir, file);
-            const code = fs.readFileSync(filePath, 'utf-8');
-            const language = path.extname(file).slice(1);
-            boilerplateCodes.push({ language, code });
+            const stat = fs.statSync(filePath);
+            if (stat.isFile()) {
+                const code = fs.readFileSync(filePath, 'utf-8');
+                const language = path.extname(file).slice(1);
+                boilerplateCodes.push({ language, code });
+            }
         }
         return boilerplateCodes;
 }
@@ -25,6 +28,7 @@ async function getBoilerPlateCodes(problemName: string) {
 async function seedDatabase() {
 
      const boilerplateFieldMap: Record<string, string> = {
+        "c" : "boilerplateCodeC",
         "cpp" : "boilerplateCodeCpp",
         "js" : "boilerplateCodeJavaScript",
         "py" : "boilerplateCodePython",

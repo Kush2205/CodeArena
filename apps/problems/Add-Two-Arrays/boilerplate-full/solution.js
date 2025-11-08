@@ -1,14 +1,11 @@
-// User Code Starts
+const fs = require('fs');
+const inputLines = fs.readFileSync(0, 'utf-8').trim().split('\n');
 
+// User Code Starts
 // User Code Ends
 
-const fs = require('fs');
-const inputRaw = fs.readFileSync(0, 'utf-8').trim().replace(/^"|"$/g, '');
-const inputLines = inputRaw.split('\n').map(line => line.trim()).filter(line => line);
-
-const a = inputLines[0].split(/\s+/).map(x => parseInt(x));
-const b = inputLines[1].split(/\s+/).map(x => parseInt(x));
-
+const a = inputLines[0].trim().split(/\s+/).map(parseInt);
+const b = inputLines[1].trim().split(/\s+/).map(parseInt);
 const solution = new Solution();
 const result = solution.addTwoArrays(a, b);
 console.log(result.join(' '));

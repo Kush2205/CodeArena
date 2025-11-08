@@ -4,6 +4,7 @@ import { generateTestCases } from "../../../../../utils/generateTestCases";
 import prisma from "@repo/db/client";
 
 const languageIdMap: Record<string, number> = {
+  c: 50,
   cpp: 54,
   python: 71,
   java: 62,

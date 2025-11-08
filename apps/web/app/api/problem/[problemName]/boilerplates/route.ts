@@ -11,6 +11,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const boilerplates = await prisma.problem.findUnique({
     where: { name: decodedProblemName },
     select: {
+       boilerplateCodeC: true,
        boilerplateCodeCpp: true,
        boilerplateCodeJavaScript: true,
        boilerplateCodePython: true,

@@ -22,12 +22,12 @@ export async function POST(req: NextRequest) {
         }
         
         const secret = new TextEncoder().encode(process.env.JWT_SECRET as string || "secret");
-        const token = await new SignJWT({ userId: user.id, email: user.email })
+        const token = await new SignJWT({ userId: user.id, email: user.email, role: user.role })
             .setProtectedHeader({ alg: 'HS256' })
             .setExpirationTime('24h')
             .sign(secret);
 
-        return NextResponse.json({ message: "Sign in successful", userId: user.id, token }, { status: 200 });
+        return NextResponse.json({ message: "Sign in successful", userId: user.id, role: user.role, token }, { status: 200 });
     } catch (error) {
         console.error("Error during sign in:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

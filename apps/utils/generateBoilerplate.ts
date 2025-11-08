@@ -51,16 +51,31 @@ function generateCppBoilerplate(problem: Problem): string {
     const cppTypeMap: Record<string, string> = {
         int:'int', float:'float', double:'double', string:'string', bool:'bool', char:'char',
         'long long':'long long', 'int[]':'vector<int>', 'float[]':'vector<float>',
-        'double[]':'vector<double>', 'string[]':'vector<string>'
+        'double[]':'vector<double>', 'string[]':'vector<string>',
+        TreeNode: 'TreeNode*', ListNode: 'ListNode*',
+        AdjacencyMatrix: 'vector<vector<int>>', AdjacencyList: 'vector<vector<int>>'
     };
     const argsList = inputs.map(i => {
         const typeStr = cppTypeMap[i.type] || i.type;
-        return typeStr.startsWith('vector') ? `${typeStr}& ${i.name}` : `${typeStr} ${i.name}`;
+        return typeStr.startsWith('vector') || typeStr.includes('*') ? `${typeStr}& ${i.name}` : `${typeStr} ${i.name}`;
     }).join(', ');
 
     const returnTypeStr = cppTypeMap[returnType] || 'void';
 
-    return `class Solution {
+    const hasTree = inputs.some(i => i.type === 'TreeNode') || output.some(o => o.type === 'TreeNode');
+    const hasList = inputs.some(i => i.type === 'ListNode') || output.some(o => o.type === 'ListNode');
+    const hasVector = inputs.some(i => i.type.includes('[]')) || output.some(o => o.type.includes('[]'));
+    const hasString = inputs.some(i => i.type === 'string') || output.some(o => o.type === 'string');
+
+    let includes = '';
+    let structs = '';
+    if (hasTree) {
+        structs += `// struct TreeNode {\n//     int val;\n//     TreeNode *left;\n//     TreeNode *right;\n//     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}\n// };\n\n`;
+    }
+    if (hasList) {
+        structs += `// struct ListNode {\n//     int val;\n//     ListNode *next;\n//     ListNode(int x) : val(x), next(nullptr) {}\n// };\n\n`;
+    }
+    return `${structs}class Solution {
 public:
     ${returnTypeStr} ${functionName}(${argsList}) {
         // User Code Starts
@@ -86,6 +101,10 @@ function generatePythonBoilerplate(problem: Problem): string {
         'float[]': 'List[float]',
         'double[]': 'List[float]',
         'string[]': 'List[str]',
+        'TreeNode': 'Optional[TreeNode]',
+        'ListNode': 'Optional[ListNode]',
+        'AdjacencyMatrix': 'List[List[int]]',
+        'AdjacencyList': 'List[List[int]]',
         // fallback
         'any': 'Any'
     };
@@ -101,20 +120,28 @@ function generatePythonBoilerplate(problem: Problem): string {
 
     // Collect required imports
     const imports = new Set<string>();
-    inputs.forEach(i => {
-        if (i.type.endsWith('[]')) imports.add('List');
+    inputs.forEach(i => { 
+        if (i.type.endsWith('[]') || i.type === 'AdjacencyMatrix' || i.type === 'AdjacencyList') imports.add('List');
+        if (i.type === 'TreeNode' || i.type === 'ListNode') imports.add('Optional');
     });
-    if (!pyTypeMap[returnType].startsWith('List') && returnTypeString === 'Any') imports.add('Any');
+    if (output.some(o => o.type === 'TreeNode' || o.type === 'ListNode')) imports.add('Optional');
+    if (returnType.endsWith('[]') || returnType === 'AdjacencyMatrix' || returnType === 'AdjacencyList') imports.add('List');
+    if (returnTypeString === 'Any') imports.add('Any');
     
     const importLine = imports.size > 0 ? `from typing import ${Array.from(imports).join(', ')}\n\n` : '';
 
-    return `${importLine}class Solution:
-    def ${functionName}(self, ${inputParams}) -> ${returnTypeString}:
-        # User Code Starts
+    const hasTree = inputs.some(i => i.type === 'TreeNode') || output.some(o => o.type === 'TreeNode');
+    const hasList = inputs.some(i => i.type === 'ListNode') || output.some(o => o.type === 'ListNode');
 
-        # User Code Ends
-        pass
-`;
+    let classes = '';
+    if (hasTree) {
+        classes += `# class TreeNode:\n#     def __init__(self, val: int = 0, left: Optional['TreeNode'] = None, right: Optional['TreeNode'] = None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\n\n`;
+    }
+    if (hasList) {
+        classes += `# class ListNode:\n#     def __init__(self, val: int = 0, next: Optional['ListNode'] = None):\n#         self.val = val\n#         self.next = next\n\n`;
+    }
+
+    return `${classes}class Solution:\n    def ${functionName}(self, ${inputParams}) -> ${returnTypeString}:\n        # User Code Starts\n\n        # User Code Ends`;
 }
 
 
@@ -126,19 +153,67 @@ function generateJavaBoilerplate(problem: Problem): string {
 
     const javaTypeMap: Record<string,string> = {
         int:'int', float:'float', double:'double', string:'String', bool:'boolean', char:'char',
-        'long long':'long', 'int[]':'int[]', 'float[]':'float[]', 'double[]':'double[]', 'string[]':'String[]'
+        'long long':'long', 'int[]':'int[]', 'float[]':'float[]', 'double[]':'double[]', 'string[]':'String[]',
+        TreeNode: 'TreeNode', ListNode: 'ListNode', AdjacencyMatrix: 'int[][]', AdjacencyList: 'List<List<Integer>>'
     };
 
     const argsList = inputs.map(i => `${javaTypeMap[i.type] || i.type} ${i.name}`).join(', ');
     const returnTypeStr = javaTypeMap[returnType] || 'void';
 
-    return `class Solution {
-    public ${returnTypeStr} ${functionName}(${argsList}) {
-        // User Code Starts
+    const hasTree = inputs.some(i => i.type === 'TreeNode') || output.some(o => o.type === 'TreeNode');
+    const hasList = inputs.some(i => i.type === 'ListNode') || output.some(o => o.type === 'ListNode');
+    const hasAdjList = inputs.some(i => i.type === 'AdjacencyList') || output.some(o => o.type === 'AdjacencyList');
 
-        // User Code Ends
+    let classes = '';
+    if (hasTree) {
+        classes += `// class TreeNode {\n//     int val;\n//     TreeNode left;\n//     TreeNode right;\n//     TreeNode(int val) { this.val = val; }\n// }\n\n`;
     }
-}`;
+    if (hasList) {
+        classes += `// class ListNode {\n//     int val;\n//     ListNode next;\n//     ListNode(int val) { this.val = val; }\n// }\n\n`;
+    }
+    return `${classes}class Solution {\n    public ${returnTypeStr} ${functionName}(${argsList}) {\n        // User Code Starts\n\n        // User Code Ends\n    }\n}`;
+}
+
+// C
+function generateCBoilerplate(problem: Problem): string {
+    const { functionName, inputs, output } = problem;
+    const returnType = output.length > 0 ? output[0].type : 'void';
+
+    const cTypeMap: Record<string, string> = {
+        int:'int', float:'float', double:'double', string:'char*', bool:'bool', char:'char',
+        'long long':'long long', 'int[]':'int*', 'float[]':'float*',
+        'double[]':'double*', 'string[]':'char**',
+        TreeNode: 'struct TreeNode*', ListNode: 'struct ListNode*',
+        AdjacencyMatrix: 'int**', AdjacencyList: 'int**'
+    };
+
+    // For array return types in C, we need a returnSize parameter
+    const needsReturnSize = returnType.endsWith('[]');
+    const argsListParts = inputs.map(i => {
+        const cType = cTypeMap[i.type] || i.type;
+        // For graphs and arrays, we need to pass size parameter
+        if (i.type === 'AdjacencyMatrix') return `${cType} ${i.name}, int n`;
+        if (i.type === 'AdjacencyList') return `${cType} ${i.name}, int n`;
+        if (i.type.endsWith('[]') && cType.includes('*')) return `${cType} ${i.name}, int ${i.name}Size`;
+        return `${cType} ${i.name}`;
+    });
+    if (needsReturnSize) {
+        argsListParts.push('int* returnSize');
+    }
+    const argsList = argsListParts.join(', ');
+    const returnTypeStr = cTypeMap[returnType] || 'void';
+
+    const hasTree = inputs.some(i => i.type === 'TreeNode') || output.some(o => o.type === 'TreeNode');
+    const hasList = inputs.some(i => i.type === 'ListNode') || output.some(o => o.type === 'ListNode');
+
+    let structs = '';
+    if (hasTree) {
+        structs += `// struct TreeNode {\n//     int val;\n//     struct TreeNode *left;\n//     struct TreeNode *right;\n// };\n\n`;
+    }
+    if (hasList) {
+        structs += `// struct ListNode {\n//     int val;\n//     struct ListNode *next;\n// };\n\n`;
+    }
+    return `${structs}${returnTypeStr} ${functionName}(${argsList}) {\n    // User Code Starts\n\n    // User Code Ends\n}`;
 }
 
 // JavaScript
@@ -146,7 +221,17 @@ function generateJavascriptBoilerplate(problem: Problem): string {
     const { functionName, inputs } = problem;
     const argsList = inputs.map(i => i.name).join(', ');
 
-    return `class Solution {
+    const hasTree = inputs.some(i => i.type === 'TreeNode') || problem.output.some(o => o.type === 'TreeNode');
+    const hasList = inputs.some(i => i.type === 'ListNode') || problem.output.some(o => o.type === 'ListNode');
+
+    let classes = '';
+    if (hasTree) {
+        classes += `// class TreeNode {\n//     constructor(val = 0, left = null, right = null) {\n//         this.val = val;\n//         this.left = left;\n//         this.right = right;\n//     }\n// }\n\n`;
+    }
+    if (hasList) {
+        classes += `// class ListNode {\n//     constructor(val = 0, next = null) {\n//         this.val = val;\n//         this.next = next;\n//     }\n// }\n\n`;
+    }
+    return `${classes}class Solution {
     ${functionName}(${argsList}) {
         // User Code Starts
 
@@ -163,10 +248,11 @@ function generateBoilerplateFiles(problem: Problem, outputDir: string) {
     fs.writeFileSync(path.join(outputDir, 'solution.py'), generatePythonBoilerplate(problem));
     fs.writeFileSync(path.join(outputDir, 'Solution.java'), generateJavaBoilerplate(problem));
     fs.writeFileSync(path.join(outputDir, 'solution.js'), generateJavascriptBoilerplate(problem));
+    fs.writeFileSync(path.join(outputDir, 'solution.c'), generateCBoilerplate(problem));
 
     console.log(`✅ Generated editor boilerplates for: ${problem.problemName}`);
     console.log(`📁 Output directory: ${outputDir}`);
-    console.log('📄 Files: solution.cpp, solution.py, Solution.java, solution.js');
+    console.log('📄 Files: solution.cpp, solution.py, Solution.java, solution.js, solution.c');
 }
 
 // -------------------- Main --------------------

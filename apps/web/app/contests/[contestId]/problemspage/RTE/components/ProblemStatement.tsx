@@ -100,6 +100,11 @@ export const ProblemStatement = ({ content , contestId , problemName }: { conten
     const submissionStatus = useSubmissionStore(state => state.status);
     const totalTestCases = useSubmissionStore(state => state.totalTestCases);
     const passedTestCases = useSubmissionStore(state => state.passedTestCases);
+    const failedTestCases = useSubmissionStore(state => state.failedTestCases);
+    const points = useSubmissionStore(state => state.points);
+    const pointsAwarded = useSubmissionStore(state => state.pointsAwarded);
+    const newTestCasesPassed = useSubmissionStore(state => state.newTestCasesPassed);
+    const alreadySolved = useSubmissionStore(state => state.alreadySolved);
 
     useEffect(() => {
         if (activeTab === 'submissions' && problemId !== null) {
@@ -191,7 +196,7 @@ export const ProblemStatement = ({ content , contestId , problemName }: { conten
                         {(submissionStatus === 'polling' || submissionStatus === 'completed') && (
                             <div>
                                 <div className="mb-6 p-4 bg-neutral-800 rounded-lg border border-neutral-700">
-                                    <div className="flex justify-between items-center">
+                                    <div className="flex justify-between items-center mb-3">
                                         <span className="text-lg font-semibold">
                                             Test Cases: {passedTestCases}/{totalTestCases} Passed
                                         </span>
@@ -199,6 +204,38 @@ export const ProblemStatement = ({ content , contestId , problemName }: { conten
                                             <Loader2 className="animate-spin text-blue-400" size={20} />
                                         )}
                                     </div>
+                                    
+                                    {submissionStatus === 'completed' && (
+                                        <div className="mt-3 pt-3 border-t border-neutral-700">
+                                            {pointsAwarded && points > 0 ? (
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-2 text-green-400">
+                                                        <CheckCircle size={20} />
+                                                        <span className="font-bold text-xl">+{points} Points Earned! 🎉</span>
+                                                    </div>
+                                                    {newTestCasesPassed > 0 && newTestCasesPassed < passedTestCases && (
+                                                        <div className="text-sm text-yellow-400 ml-7">
+                                                            {newTestCasesPassed} new test case{newTestCasesPassed !== 1 ? 's' : ''} passed ({passedTestCases - newTestCasesPassed} already passed before)
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : alreadySolved && passedTestCases > 0 ? (
+                                                <div className="flex items-center gap-2 text-yellow-400">
+                                                    <span className="text-sm">
+                                                        {passedTestCases === totalTestCases 
+                                                            ? '✓ All test cases already passed before - No new points'
+                                                            : `All ${passedTestCases} passed test case${passedTestCases !== 1 ? 's were' : ' was'} already solved before - No new points`
+                                                        }
+                                                    </span>
+                                                </div>
+                                            ) : failedTestCases > 0 ? (
+                                                <div className="flex items-center gap-2 text-red-400">
+                                                    <XCircle size={20} />
+                                                    <span className="font-bold">No points - {failedTestCases} test case{failedTestCases !== 1 ? 's' : ''} failed</span>
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="space-y-3">

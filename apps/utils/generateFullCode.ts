@@ -6,6 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const languageToExtension = {
+    c: 'c',
     cpp: 'cpp',
     python: 'py',
     java: 'java',
@@ -13,6 +14,7 @@ const languageToExtension = {
 }
 
 const languageToFileName = {
+    c: 'solution',
     cpp: 'solution',
     python: 'solution',
     java: 'Solution',

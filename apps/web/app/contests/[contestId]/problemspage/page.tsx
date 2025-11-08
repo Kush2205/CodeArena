@@ -21,6 +21,12 @@ interface ContestMeta {
     endTime: string | null;
 }
 
+interface UserStats {
+    totalPoints: number;
+    totalSubmissions: number;
+    solvedProblems: number;
+}
+
 interface CachedProblems {
     problems?: Problem[];
     contest?: ContestMeta | null;
@@ -32,6 +38,7 @@ export default function ProblemsPage() {
     const [problems, setProblems] = useState<Problem[]>([]);
     const [loading, setLoading] = useState(true);
     const [contestMeta, setContestMeta] = useState<ContestMeta | null>(null);
+    const [userStats, setUserStats] = useState<UserStats | null>(null);
     const [countdown, setCountdown] = useState<string | null>(null);
     const [contestEnded, setContestEnded] = useState(false);
     const router = useRouter();
@@ -143,6 +150,26 @@ export default function ProblemsPage() {
     }, [contestIdParam]);
 
     useEffect(() => {
+        const fetchUserStats = async () => {
+            try {
+                const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+                if (!token) return;
+
+                const headers = {
+                    Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+                };
+
+                const response = await axios.get('/api/user/stats', { headers });
+                setUserStats(response.data);
+            } catch (error) {
+                console.error("Error fetching user stats:", error);
+            }
+        };
+
+        void fetchUserStats();
+    }, []);
+
+    useEffect(() => {
         if (!contestMeta?.endTime) {
             setCountdown(null);
             setContestEnded(false);
@@ -195,9 +222,27 @@ export default function ProblemsPage() {
                     <p className="text-center text-white">Loading problems...</p>
                 ) : (
                     <>
-                        <h1 className="text-7xl font-bold mb-8 text-black text-center border-b-4 border-black pb-4">
-                            Contest Problems
-                        </h1>
+                        <div className="mb-8">
+                            <h1 className="text-7xl font-bold mb-4 text-black text-center border-b-4 border-black pb-4">
+                                Contest Problems
+                            </h1>
+                            {userStats && (
+                                <div className="mt-6 flex justify-center gap-4">
+                                    <div className="bg-neutral-50 border-2 border-black px-6 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                        <div className="text-sm text-gray-600 font-medium">Total Points</div>
+                                        <div className="text-3xl font-bold text-green-700">{userStats.totalPoints}</div>
+                                    </div>
+                                    <div className="bg-neutral-50 border-2 border-black px-6 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                        <div className="text-sm text-gray-600 font-medium">Problems Solved</div>
+                                        <div className="text-3xl font-bold text-blue-700">{userStats.solvedProblems}</div>
+                                    </div>
+                                    <div className="bg-neutral-50 border-2 border-black px-6 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                        <div className="text-sm text-gray-600 font-medium">Submissions</div>
+                                        <div className="text-3xl font-bold text-purple-700">{userStats.totalSubmissions}</div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {problems.map((problem) => (
                                 <ProblemCard

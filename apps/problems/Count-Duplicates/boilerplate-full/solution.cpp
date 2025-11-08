@@ -17,11 +17,10 @@
 #include <cstring>
 #include <numeric>
 #include <functional>
-#include <utility>
+#include <bits/stdc++.h>
 using namespace std;
 
 // User Code Starts
-
 // User Code Ends
 
 int main(){

@@ -8,6 +8,7 @@ const languageIdMap: Record<string, number> = {
   python: 71,
   java: 62,
   javascript: 63,
+  c: 50,
 };
 
 const secret = process.env.JWT_SECRET || "secret";
@@ -178,7 +179,7 @@ export async function POST(req: NextRequest) {
       data: {
         userId: userId,
         problemId: problem.id,
-  contestId: contestIdNumber,
+        contestId: contestIdNumber,
         submissionTokens: {
           create: submissionTokens,
         },

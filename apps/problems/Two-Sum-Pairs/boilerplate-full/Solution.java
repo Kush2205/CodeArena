@@ -1,7 +1,6 @@
 import java.util.*;
 
 // User Code Starts
-
 // User Code Ends
 
 public class Main{
@@ -14,7 +13,6 @@ public class Main{
             arr[i] = Integer.parseInt(tokens_arr[i]);
         }
         int target = scanner.nextInt();
-
         Solution solver = new Solution();
         int result = solver.twoSum(arr, target);
         System.out.println(result);

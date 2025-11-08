@@ -11,9 +11,10 @@ interface Props {
     contestId?: string;
 }
 
-type LanguageKey = "cpp" | "python" | "java" | "javascript";
+type LanguageKey = "c" | "cpp" | "python" | "java" | "javascript";
 
 type BoilerplateResponse = {
+    boilerplateCodeC: string | null;
     boilerplateCodeCpp: string | null;
     boilerplateCodePython: string | null;
     boilerplateCodeJava: string | null;
@@ -37,6 +38,7 @@ const CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "700"] });
 
 const languageOptions: Array<{ value: LanguageKey; label: string }> = [
+    { value: "c", label: "C" },
     { value: "cpp", label: "C++" },
     { value: "python", label: "Python" },
     { value: "java", label: "Java" },
@@ -44,6 +46,7 @@ const languageOptions: Array<{ value: LanguageKey; label: string }> = [
 ];
 
 const monacoLanguageMap: Record<LanguageKey, string> = {
+    c: "c",
     cpp: "cpp",
     python: "python",
     java: "java",
@@ -51,6 +54,7 @@ const monacoLanguageMap: Record<LanguageKey, string> = {
 };
 
 const boilerplateKeyMap: Record<LanguageKey, keyof BoilerplateResponse> = {
+    c: "boilerplateCodeC",
     cpp: "boilerplateCodeCpp",
     python: "boilerplateCodePython",
     java: "boilerplateCodeJava",
@@ -226,14 +230,52 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
             monaco.editor.setModelLanguage(model, monacoLanguageMap[language]);
         }
 
-        if (editor.getValue() !== currentBoilerplate) {
-            editor.setValue(currentBoilerplate);
+        // Check for saved code in localStorage
+        const savedCodeKey = `code_${problemName}_${language}`;
+        const savedCode = localStorage.getItem(savedCodeKey);
+
+        // Use saved code if available, otherwise use boilerplate
+        const codeToSet = savedCode || currentBoilerplate;
+
+        if (editor.getValue() !== codeToSet) {
+            editor.setValue(codeToSet);
         }
-    }, [language, boilerplates, loading, error]);
+    }, [language, boilerplates, loading, error, problemName]);
+
+    // Add onChange listener to save code to localStorage
+    useEffect(() => {
+        const editor = monacoInstanceRef.current;
+        if (!editor || !problemName) return;
+
+        const disposable = editor.onDidChangeModelContent(() => {
+            const code = editor.getValue();
+            const savedCodeKey = `code_${problemName}_${language}`;
+            localStorage.setItem(savedCodeKey, code);
+        });
+
+        return () => {
+            disposable.dispose();
+        };
+    }, [problemName, language]);
 
     const setAllStatus = useTestCaseStore(state => state.setAllStatus);
     const updateStatus = useTestCaseStore(state => state.updateStatus);
     const testCases = useTestCaseStore(state => state.testCases);
+
+    const handleResetCode = () => {
+        const editor = monacoInstanceRef.current;
+        if (!editor || !boilerplates) return;
+
+        const confirmed = confirm('Are you sure you want to reset to the original boilerplate? All your changes will be lost.');
+        if (!confirmed) return;
+
+        const currentBoilerplate = boilerplates[boilerplateKeyMap[language]] ?? "// Boilerplate not available";
+        editor.setValue(currentBoilerplate);
+
+        // Remove saved code from localStorage
+        const savedCodeKey = `code_${problemName}_${language}`;
+        localStorage.removeItem(savedCodeKey);
+    };
 
     const handleRunCode = async () => {
         const editor = monacoInstanceRef.current;
@@ -445,7 +487,11 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
                     data.totalTestCases,
                     data.passedTestCases,
                     data.failedTestCases,
-                    data.pendingTestCases
+                    data.pendingTestCases,
+                    data.points,
+                    data.pointsAwarded,
+                    data.newTestCasesPassed,
+                    data.alreadySolved
                 );
 
                 pollCount++;
@@ -515,6 +561,18 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
                             </option>
                         ))}
                     </select>
+                    <button
+                        onClick={handleResetCode}
+                        disabled={isRunning || isSubmitting || !boilerplates}
+                        className={`px-3 py-2 text-xs rounded-lg bg-neutral-700 text-neutral-200 ${
+                            isRunning || isSubmitting || !boilerplates
+                                ? 'opacity-50 cursor-not-allowed'
+                                : 'cursor-pointer hover:bg-neutral-600'
+                        }`}
+                        title="Reset to original boilerplate"
+                    >
+                        Reset Code
+                    </button>
                 </div>
 
                 <div className="flex flex-1 justify-center gap-3">

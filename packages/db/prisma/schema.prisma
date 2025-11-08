@@ -12,6 +12,7 @@ model User {
   name        String
   email       String       @unique
   password    String
+  role        String       @default("user") // "admin" or "user"
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   submissions Submission[]
@@ -29,6 +30,7 @@ model Submission {
   verdict          String?
   passedTestCases  Int               @default(0)
   totalTestCases   Int               @default(0)
+  points           Int               @default(0) // 10 points per passed test case
   executionTime    Float?
   memoryUsed       Int?
   createdAt        DateTime          @default(now())
@@ -61,6 +63,7 @@ model Problem {
   name                      String           @unique
   createdAt                 DateTime         @default(now())
   updatedAt                 DateTime         @updatedAt
+  boilerplateCodeC          String?
   boilerplateCodeCpp        String?
   boilerplateCodeJava       String?
   boilerplateCodeJavaScript String?
@@ -142,4 +145,16 @@ model SolvedProblem {
   contest    Contest?  @relation(fields: [contestId], references: [id])
 
   @@unique([userId, problemId, contestId])
+}
+
+model PassedTestCase {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  problemId       Int
+  contestId       Int?
+  testCaseNumber  Int
+  passedAt        DateTime @default(now())
+
+  @@unique([userId, problemId, contestId, testCaseNumber])
+  @@index([userId, problemId, contestId])
 }
