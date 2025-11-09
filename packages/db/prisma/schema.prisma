@@ -61,6 +61,8 @@ model SubmissionToken {
 model Problem {
   id                        Int              @id @default(autoincrement())
   name                      String           @unique
+  difficulty                String           @default("easy") // "easy", "medium", "hard"
+  totalPoints               Int              @default(250) // 250 for easy, 500 for medium, 1000 for hard
   createdAt                 DateTime         @default(now())
   updatedAt                 DateTime         @updatedAt
   boilerplateCodeC          String?

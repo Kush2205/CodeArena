@@ -8,7 +8,19 @@ import axios from "axios";
 import { useSubmissionStore } from "../../../../../../store/submissionStore";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 
-export const ProblemStatement = ({ content , contestId , problemName }: { content: string , contestId : string | undefined , problemName:string}) => {
+export const ProblemStatement = ({ 
+    content, 
+    contestId, 
+    problemName,
+    difficulty,
+    totalPoints 
+}: { 
+    content: string; 
+    contestId: string | undefined; 
+    problemName: string;
+    difficulty?: string;
+    totalPoints?: number;
+}) => {
     const [activeTab, setActiveTab] = useState<'problem' | 'submissions' | 'results'>('problem');
     const [submissions, setSubmissions] = useState<any[]>([]);
     const [loadingSubmissions, setLoadingSubmissions] = useState(false);
@@ -156,7 +168,31 @@ export const ProblemStatement = ({ content , contestId , problemName }: { conten
 
             <div className="flex-1 overflow-y-auto p-6">
                 {activeTab === 'problem' ? (
-                    <article className="prose prose-invert prose-neutral max-w-none
+                    <>
+                        {/* Difficulty and Points Badge */}
+                        {(difficulty || totalPoints) && (
+                            <div className="flex gap-3 mb-6">
+                                {difficulty && (
+                                    <span
+                                        className={`inline-block px-4 py-2 rounded-lg border-2 font-bold text-sm ${
+                                            difficulty === 'easy'
+                                                ? 'bg-green-500/10 text-green-400 border-green-500'
+                                                : difficulty === 'medium'
+                                                ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500'
+                                                : 'bg-red-500/10 text-red-400 border-red-500'
+                                        }`}
+                                    >
+                                        {difficulty.toUpperCase()}
+                                    </span>
+                                )}
+                                {totalPoints && (
+                                    <span className="inline-block px-4 py-2 rounded-lg border-2 border-blue-500 bg-blue-500/10 text-blue-400 font-bold text-sm">
+                                        🎯 {totalPoints} Points
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                        <article className="prose prose-invert prose-neutral max-w-none
                         prose-headings:text-white prose-headings:font-bold
                         prose-h2:text-2xl prose-h2:mb-4
                         prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3
@@ -178,6 +214,7 @@ export const ProblemStatement = ({ content , contestId , problemName }: { conten
                             {content}
                         </Markdown>
                     </article>
+                    </>
                 ) : activeTab === 'results' ? (
                     <div className="text-neutral-300">
                         <h2 className="text-2xl font-bold text-white mb-4">Submission Results</h2>

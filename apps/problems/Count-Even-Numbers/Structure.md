@@ -1,5 +1,7 @@
 Problem Name : count even numbers
 
+Difficulty : easy
+
 Function Name : countEvenNumbers
 
 Input Structure:

@@ -36,7 +36,11 @@ export default async function RTEPage({ params, searchParams }: PageProps) {
 
   const problemRecord = await prisma.problem.findUnique({
     where: { name: problemName },
-    select: { id: true },
+    select: { 
+      id: true,
+      difficulty: true,
+      totalPoints: true,
+    },
   });
 
   const problemId = problemRecord?.id;
@@ -57,7 +61,7 @@ export default async function RTEPage({ params, searchParams }: PageProps) {
         </Link>
       </div>
       <ResizableLayout
-        leftPanel={<ProblemStatementWrapper problemName={problemName} contestId={contestId} />}
+        leftPanel={<ProblemStatementWrapper problemName={problemName} contestId={contestId} difficulty={problemRecord?.difficulty} totalPoints={problemRecord?.totalPoints} />}
         topRightPanel={<CodeEditor problemName={problemName} contestId={contestId} />}
         bottomRightPanel={<TestCases problemName={problemName} />}
       />

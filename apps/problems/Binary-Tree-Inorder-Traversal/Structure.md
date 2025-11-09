@@ -1,5 +1,7 @@
 Problem Name : binary tree inorder traversal
 
+Difficulty : medium
+
 Function Name : inorderTraversal
 
 Input Structure:

@@ -2,7 +2,17 @@ import fs from "fs";
 import path from "path";
 import { ProblemStatement } from "./ProblemStatement";
 
-export const ProblemStatementWrapper = ({ problemName , contestId }: { problemName: string , contestId : string | undefined}) => {
+export const ProblemStatementWrapper = ({ 
+    problemName, 
+    contestId, 
+    difficulty, 
+    totalPoints 
+}: { 
+    problemName: string; 
+    contestId: string | undefined;
+    difficulty?: string;
+    totalPoints?: number;
+}) => {
     const problemPath = path.join(
         process.cwd(),
         "..",
@@ -21,5 +31,13 @@ export const ProblemStatementWrapper = ({ problemName , contestId }: { problemNa
 
     const content = fs.readFileSync(problemPath, "utf-8");
 
-    return <ProblemStatement content={content} contestId={contestId} problemName={problemName} />;
+    return (
+        <ProblemStatement 
+            content={content} 
+            contestId={contestId} 
+            problemName={problemName}
+            difficulty={difficulty}
+            totalPoints={totalPoints}
+        />
+    );
 };

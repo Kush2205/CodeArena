@@ -25,6 +25,40 @@ async function getBoilerPlateCodes(problemName: string) {
         return boilerplateCodes;
 }
 
+function getDifficultyFromStructure(problemName: string): string {
+    const structureFilePath = path.join(__dirname, '..', 'problems', problemName, 'Structure.md');
+    
+    if (!fs.existsSync(structureFilePath)) {
+        console.warn(`⚠️ Structure.md not found for ${problemName}, defaulting to easy`);
+        return 'easy';
+    }
+
+    const fileContent = fs.readFileSync(structureFilePath, 'utf-8');
+    const lines = fileContent.split('\n');
+
+    for (const line of lines) {
+        const trimmedLine = line.trim();
+        if (trimmedLine.startsWith('Difficulty :')) {
+            const difficulty = trimmedLine.split(':')[1].trim().toLowerCase();
+            if (['easy', 'medium', 'hard'].includes(difficulty)) {
+                return difficulty;
+            }
+        }
+    }
+
+    console.warn(`⚠️ Difficulty not found in Structure.md for ${problemName}, defaulting to easy`);
+    return 'easy';
+}
+
+function calculateTotalPoints(difficulty: string, testCaseCount: number): number {
+    const pointsMap: Record<string, number> = {
+        'easy': 250,
+        'medium': 500,
+        'hard': 1000,
+    };
+    return pointsMap[difficulty] || 250;
+}
+
 async function seedDatabase() {
 
      const boilerplateFieldMap: Record<string, string> = {
@@ -51,12 +85,17 @@ async function seedDatabase() {
             // generateTestCases now only returns test cases 0, 1, and 2
             const testCases = generateTestCases(problemName);
             const boilerplateCodes = await getBoilerPlateCodes(problemName);
+            const difficulty = getDifficultyFromStructure(problemName);
+            const totalPoints = calculateTotalPoints(difficulty, testCases.length);
             
             console.log(`Test cases to seed for ${problemName}:`, testCases.length);
+            console.log(`Difficulty: ${difficulty}, Total Points: ${totalPoints}`);
 
             await prisma.problem.upsert({
                 where: { name: problemName },
                 update: {
+                    difficulty,
+                    totalPoints,
                     testCases: {
                         deleteMany: {},
                         create: testCases,
@@ -72,6 +111,8 @@ async function seedDatabase() {
                 },
                 create: { 
                     name: problemName,
+                    difficulty,
+                    totalPoints,
                     testCases: {
                         create: testCases,
                     },

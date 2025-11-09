@@ -159,8 +159,26 @@ export async function GET(
 
           newTestCasesPassed = newlyPassedTestCases.length;
 
-          // Award points only for newly passed test cases (10 points each)
-          points = newTestCasesPassed * 10;
+          // Get problem to calculate points per test case
+          const problem = await prisma.problem.findUnique({
+            where: { id: submission.problemId },
+            select: {
+              totalPoints: true,
+              _count: {
+                select: {
+                  testCases: true,
+                },
+              },
+            },
+          });
+
+          // Calculate points per test case (totalPoints / number of test cases)
+          const pointsPerTestCase = problem
+            ? Math.floor(problem.totalPoints / problem._count.testCases)
+            : 10; // fallback to 10 if problem not found
+
+          // Award points only for newly passed test cases
+          points = newTestCasesPassed * pointsPerTestCase;
 
           // Record the newly passed test cases
           if (newlyPassedTestCases.length > 0) {

@@ -1,5 +1,7 @@
 Problem Name : two sum pairs
 
+Difficulty : medium
+
 Function Name : twoSum
 
 Input Structure:

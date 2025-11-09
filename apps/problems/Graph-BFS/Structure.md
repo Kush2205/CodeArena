@@ -1,5 +1,7 @@
 Problem Name : graph bfs traversal
 
+Difficulty : hard
+
 Function Name : graphBFSTraversal
 
 Input Structure:
