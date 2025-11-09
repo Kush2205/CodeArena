@@ -422,6 +422,12 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
             return;
         }
 
+        const contestData = await axios.get(`/api/contest/${contestId}/${new Date().toISOString()}`);
+        if(contestData.data.status === 'ended' || contestData.data.status === 'upcoming' || contestData.data.status === "invalid") {
+            alert(`Contest is ${contestData.data.status}. You cannot submit code now.`);
+            return;
+        }
+
         setDisqualificationMessage(null);
         setIsSubmitting(true);
         const code = editor.getValue();
@@ -446,7 +452,7 @@ export const CodeEditor = ({ problemName , contestId }: Props) => {
                 setSubmissionId(res.data.submissionId);
                 setSubmissionStatus('polling');
                 
-                // Start polling for results
+               
                 startPolling(res.data.submissionId);
             }
         } catch (error) {

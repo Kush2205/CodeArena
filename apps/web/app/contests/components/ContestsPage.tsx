@@ -76,6 +76,18 @@ export default function ContestPage() {
         );
     }
 
+
+    const handleClick =async (contestId: number) => {
+        const contestData = await axios.get(`/api/contest/${contestId}/${new Date().toISOString()}`);
+        if(contestData.data.status === 'ended' || contestData.data.status === 'upcoming' || contestData.data.status === "invalid") {
+            alert(`Contest is ${contestData.data.status}. You cannot participate now.`);
+        }
+        else{
+            router.push(`/contests/${contestId}`);
+        }
+        
+    }
+
     return (
         <div className="min-h-screen  p-8">
             <div className="max-w-6xl mx-auto">
@@ -90,9 +102,7 @@ export default function ContestPage() {
                             started={contest.started}
                             startTime={contest.StartTime}
                             endTime={contest.EndTime}
-                            onClick={() => {
-                                router.push(`/contests/${contest.id}`);
-                            }}
+                            onClick={() => {handleClick(contest.id)}}
                         />
                     ))}
                 </div>

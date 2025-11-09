@@ -18,7 +18,17 @@ async function generateContest(contestName: string){
     const problemNames = fs.readFileSync(dataFilePath, 'utf-8')
         .split('\n')
         .map(line => line.trim())
-        .filter(line => line.length > 0);
+        .filter(line => line.length > 0 && !line.startsWith('Starts') && !line.startsWith('Ends'));
+    
+    const startTime = fs.readFileSync(dataFilePath, 'utf-8')
+        .split('\n')
+        .find(line => line.startsWith('Starts'))?.split(' ')[1].trim();
+    
+    const endTime = fs.readFileSync(dataFilePath, 'utf-8')
+        .split('\n')
+        .find(line => line.startsWith('Ends'))?.split(' ')[1].trim();
+    
+    console.log(startTime , endTime);
 
     const existing = await prisma.contest.findUnique({
         where: { name: contestName },
@@ -44,8 +54,8 @@ async function generateContest(contestName: string){
                 })),
             },
             started: false,
-            StartTime: new Date("2025-10-28T10:00:00Z"),
-            EndTime: new Date("2025-11-28T12:00:00Z"),
+            StartTime: new Date(startTime),
+            EndTime: new Date(endTime),
 
         },
     });
