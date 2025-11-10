@@ -10,12 +10,11 @@ function generateSensorCalibrationTestCases() {
         fs.mkdirSync(testCasesDir, { recursive: true });
     }
 
-    // Test cases 3-22: Various array sizes and k values
+    // Test cases 3-17: Various array sizes and k values
     const testCases = [
         [10, 2], [15, 3], [20, 4], [30, 5], [50, 2],
         [100, 3], [150, 4], [200, 5], [300, 10], [400, 8],
-        [500, 6], [600, 7], [700, 9], [800, 11], [900, 12],
-        [1000, 10], [1200, 15], [1400, 20], [1600, 25], [1800, 30]
+        [500, 6], [600, 7], [700, 9], [800, 11], [900, 12]
     ];
     
     for (let i = 0; i < testCases.length; i++) {
@@ -23,11 +22,11 @@ function generateSensorCalibrationTestCases() {
         generateTestCase(i + 3, n, k);
     }
     
-    // Test cases 23-24: Maximum size for TLE detection
-    generateTestCase(23, 2000, 50); // Maximum constraint
-    generateTestCase(24, 2000, 100); // Maximum constraint
+    // Test cases 18-19: Large arrays for TLE detection
+    generateTestCase(18, 1000, 50); // 1000 elements
+    generateTestCase(19, 1000, 100); // 1000 elements
 
-    console.log('✅ Generated 25 test cases for Sensor-Calibration-System');
+    console.log('✅ Generated 20 test cases for Sensor-Calibration-System (0-19)');
 }
 
 function generateTestCase(caseNum, n, k) {

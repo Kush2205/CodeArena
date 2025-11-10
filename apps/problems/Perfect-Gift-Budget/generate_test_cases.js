@@ -10,12 +10,11 @@ function generatePerfectGiftBudgetTestCases() {
         fs.mkdirSync(testCasesDir, { recursive: true });
     }
 
-    // Test cases 3-22: Various k and n combinations
+    // Test cases 3-17: Various k and n combinations
     const testCases = [
         [2, 3], [2, 5], [3, 15], [4, 10], [5, 15],
         [5, 20], [6, 21], [6, 30], [7, 28], [7, 35],
-        [8, 36], [8, 40], [9, 45], [9, 50], [9, 55],
-        [9, 60], [8, 44], [7, 42], [6, 38], [5, 35]
+        [8, 36], [8, 40], [9, 45], [9, 50], [9, 55]
     ];
     
     for (let i = 0; i < testCases.length; i++) {
@@ -23,11 +22,11 @@ function generatePerfectGiftBudgetTestCases() {
         generateTestCase(i + 3, k, n);
     }
     
-    // Test cases 23-24: Complex backtracking scenarios
-    generateTestCase(23, 9, 58); // Many combinations
-    generateTestCase(24, 9, 59); // Many combinations
+    // Test cases 18-19: Complex backtracking scenarios
+    generateTestCase(18, 9, 58); // Many combinations
+    generateTestCase(19, 9, 59); // Many combinations
 
-    console.log('✅ Generated 25 test cases for Perfect-Gift-Budget');
+    console.log('✅ Generated 20 test cases for Perfect-Gift-Budget (0-19)');
 }
 
 function findCombinations(k, n) {

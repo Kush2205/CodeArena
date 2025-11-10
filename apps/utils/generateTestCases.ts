@@ -37,8 +37,14 @@ export function generateTestCases(problemName: string) {
         
         // Only add if both files exist
         if (fs.existsSync(inFilePath) && fs.existsSync(outFilePath)) {
-            const input = fs.readFileSync(inFilePath, 'utf-8').trim();
-            const output = fs.readFileSync(outFilePath, 'utf-8').trim();
+            // Use replace to remove only trailing newlines, preserve internal structure
+            let input = fs.readFileSync(inFilePath, 'utf-8');
+            let output = fs.readFileSync(outFilePath, 'utf-8');
+            
+            // Remove only trailing newlines
+            input = input.replace(/\n+$/, '');
+            output = output.replace(/\n+$/, '');
+            
             testCases.push({ input, output });
             console.log(`✅ Loaded test case ${index} for ${problemName}`);
         } else {
@@ -85,8 +91,14 @@ export function generateAllTestCases(problemName: string) {
             const inFilePath = path.join(testCasesDir, inFile);
             const outFilePath = path.join(testCasesDir, outFile);
             
-            const input = fs.readFileSync(inFilePath, 'utf-8').trim();
-            const output = fs.readFileSync(outFilePath, 'utf-8').trim();
+            // Use trimEnd to preserve internal structure but remove trailing newline
+            let input = fs.readFileSync(inFilePath, 'utf-8');
+            let output = fs.readFileSync(outFilePath, 'utf-8');
+            
+            // Remove only trailing newlines, preserve internal empty lines
+            input = input.replace(/\n+$/, '');
+            output = output.replace(/\n+$/, '');
+            
             testCases.push({ input, output });
         }
     }

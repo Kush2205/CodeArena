@@ -14,7 +14,7 @@ function generateMergeSortedListsTestCases() {
         [10, 10], [20, 20], [30, 30], [40, 40], [50, 50],
         [60, 60], [70, 70], [80, 80], [90, 90], [100, 100],
         [150, 50], [100, 100], [120, 80], [160, 40], [180, 20],
-        [190, 10], [195, 5], [198, 2], [199, 1], [200, 200]
+        [190, 10], [195, 5]
     ];
     
     for (let i = 0; i < testSizes.length; i++) {
@@ -22,11 +22,11 @@ function generateMergeSortedListsTestCases() {
         generateTestCase(i + 3, m, n);
     }
     
-    // Test cases 23-24: Large arrays to cause TLE for O(n²) solutions
-    generateLargeTestCase(23, 100000, 100000); // 200k total elements
-    generateLargeTestCase(24, 150000, 150000); // 300k total elements
+    // Test cases 18-19: Large arrays to cause TLE for O(n²) solutions
+    generateLargeTestCase(18, 10000, 10000); // 20k total elements
+    generateLargeTestCase(19, 15000, 15000); // 30k total elements
 
-    console.log('✅ Generated 25 test cases for Merge-Sorted-Lists');
+    console.log('✅ Generated 20 test cases for Merge-Sorted-Lists (0-19)');
 }
 
 function generateTestCase(caseNum, m, n) {

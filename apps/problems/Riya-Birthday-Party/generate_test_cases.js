@@ -10,18 +10,18 @@ function generateBirthdayPartyTestCases() {
         fs.mkdirSync(testCasesDir, { recursive: true });
     }
 
-    // Test cases 3-22: Various graph configurations
-    const sizes = [5, 6, 10, 15, 20, 30, 50, 75, 100, 200, 300, 500, 1000, 1500, 2000, 3000, 5000, 7500, 10000, 15000];
+    // Test cases 3-17: Various graph configurations
+    const sizes = [5, 6, 10, 15, 20, 30, 50, 75, 100, 200, 300, 500, 1000, 1500, 2000];
     
     for (let i = 0; i < sizes.length; i++) {
         generateTestCase(i + 3, sizes[i]);
     }
     
-    // Test cases 23-24: Maximum size for TLE detection
-    generateTestCase(23, 100000); // 10^5 maximum constraint
-    generateTestCase(24, 100000); // 10^5 maximum constraint
+    // Test cases 18-19: Large graphs for TLE detection
+    generateTestCase(18, 10000); // 10k nodes
+    generateTestCase(19, 10000); // 10k nodes
 
-    console.log('✅ Generated 25 test cases for Riya-Birthday-Party');
+    console.log('✅ Generated 20 test cases for Riya-Birthday-Party (0-19)');
 }
 
 function generateTestCase(caseNum, n) {

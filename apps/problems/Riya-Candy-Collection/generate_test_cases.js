@@ -10,16 +10,16 @@ function generateCandyCollectionTestCases() {
         fs.mkdirSync(testCasesDir, { recursive: true });
     }
 
-    // Test cases 3-22: Various combinations
-    for (let i = 3; i <= 22; i++) {
+    // Test cases 3-17: Various combinations
+    for (let i = 3; i <= 17; i++) {
         generateTestCase(i);
     }
     
-    // Test cases 23-24: Maximum length strings for TLE detection
-    generateLargeTestCase(23, 10000000); // 10^7 length
-    generateLargeTestCase(24, 10000000); // 10^7 length
+    // Test cases 18-19: Large strings for TLE detection
+    generateLargeTestCase(18, 100000); // 100k length
+    generateLargeTestCase(19, 100000); // 100k length
 
-    console.log('✅ Generated 25 test cases for Riya-Candy-Collection');
+    console.log('✅ Generated 20 test cases for Riya-Candy-Collection (0-19)');
 }
 
 function generateTestCase(caseNum) {

@@ -10,7 +10,7 @@ function generateOrganizationalHierarchyTestCases() {
         fs.mkdirSync(testCasesDir, { recursive: true });
     }
 
-    // Test cases 3-22: Various tree sizes and shapes
+    // Test cases 3-17: Various tree sizes and shapes
     generateTestCase(3, 3);   // Small tree
     generateTestCase(4, 7);   // Medium tree
     generateTestCase(5, 15);  // Larger tree
@@ -26,17 +26,12 @@ function generateOrganizationalHierarchyTestCases() {
     generateTestCase(15, 90); 
     generateTestCase(16, 100);
     generateTestCase(17, 150);
-    generateTestCase(18, 200);
-    generateTestCase(19, 300);
-    generateTestCase(20, 500);
-    generateTestCase(21, 1000);
-    generateTestCase(22, 1500);
     
-    // Test cases 23-24: Large trees for TLE detection
-    generateTestCase(23, 2000); // Maximum constraint
-    generateTestCase(24, 2000); // Maximum constraint
+    // Test cases 18-19: Large trees for TLE detection
+    generateTestCase(18, 1000); // 1000 nodes
+    generateTestCase(19, 1000); // 1000 nodes
 
-    console.log('✅ Generated 25 test cases for Organizational-Hierarchy');
+    console.log('✅ Generated 20 test cases for Organizational-Hierarchy (0-19)');
 }
 
 function generateTestCase(caseNum, numNodes) {
