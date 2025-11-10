@@ -41,8 +41,8 @@ function generateOrganizationalHierarchyTestCases() {
 
 function generateTestCase(caseNum, numNodes) {
     if (numNodes === 0) {
-        fs.writeFileSync(path.join(__dirname, 'test_cases', `input_${caseNum}.txt`), '[]\n');
-        fs.writeFileSync(path.join(__dirname, 'test_cases', `output_${caseNum}.txt`), '[]\n');
+        fs.writeFileSync(path.join(__dirname, 'test_cases', `${caseNum}.in.txt`), '\n');
+        fs.writeFileSync(path.join(__dirname, 'test_cases', `${caseNum}.out.txt`), '\n');
         return;
     }
     
@@ -62,15 +62,15 @@ function generateTestCase(caseNum, numNodes) {
     // Calculate level order traversal
     const result = calculateLevelOrder(tree);
     
-    // Write input file
-    const inputPath = path.join(__dirname, 'test_cases', `input_${caseNum}.txt`);
-    const inputStr = formatTreeArray(tree);
+    // Write input file - space-separated with null as string
+    const inputPath = path.join(__dirname, 'test_cases', `${caseNum}.in.txt`);
+    const inputStr = tree.map(val => val === null ? 'null' : val).join(' ');
     fs.writeFileSync(inputPath, `${inputStr}\n`);
     
-    // Write output file
-    const outputPath = path.join(__dirname, 'test_cases', `output_${caseNum}.txt`);
-    const outputStr = JSON.stringify(result);
-    fs.writeFileSync(outputPath, `${outputStr}\n`);
+    // Write output file - each level on a new line, values space-separated
+    const outputPath = path.join(__dirname, 'test_cases', `${caseNum}.out.txt`);
+    const outputStr = result.map(level => level.join(' ')).join('\n') + '\n';
+    fs.writeFileSync(outputPath, outputStr);
     
     console.log(`Generated test case ${caseNum}: numNodes=${numNodes}, levels=${result.length}`);
 }
@@ -103,11 +103,6 @@ function calculateLevelOrder(tree) {
     }
     
     return result;
-}
-
-function formatTreeArray(arr) {
-    const formatted = arr.map(val => val === null ? 'null' : val);
-    return '[' + formatted.join(', ') + ']';
 }
 
 // Run the generator

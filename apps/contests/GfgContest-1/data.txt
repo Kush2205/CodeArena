@@ -8,11 +8,6 @@ Subarray-With-Sum
 Two-Sum-Pairs
 Binary-Tree-Inorder-Traversal
 Graph-BFS
-Merge-Sorted-Lists
-Riya-Candy-Collection
-Perfect-Gift-Budget
-Organizational-Hierarchy
-Riya-Birthday-Party
-Sensor-Calibration-System
+
 Starts - 2025-11-10T10:00:00+05:30
 Ends - 2025-11-12T00:21:00+05:30

@@ -59,8 +59,8 @@ function generateTestCase(caseNum, m, n) {
 }
 
 function formatArray(arr) {
-    if (arr.length === 0) return '[]';
-    return '[' + arr.join(', ') + ']';
+    if (arr.length === 0) return '';
+    return arr.join(' ');
 }
 
 function generateLargeTestCase(caseNum, m, n) {
@@ -71,36 +71,33 @@ function generateLargeTestCase(caseNum, m, n) {
     const outputStream = fs.createWriteStream(outputPath);
     
     // Generate and write list1
-    inputStream.write('[');
     let current1 = 0;
     const list1 = [];
     for (let i = 0; i < m; i++) {
-        if (i > 0) inputStream.write(', ');
+        if (i > 0) inputStream.write(' ');
         inputStream.write(current1.toString());
         list1.push(current1);
         current1 += Math.floor(Math.random() * 10) + 1;
     }
-    inputStream.write(']\n');
+    inputStream.write('\n');
     
     // Generate and write list2
-    inputStream.write('[');
     let current2 = 0;
     const list2 = [];
     for (let i = 0; i < n; i++) {
-        if (i > 0) inputStream.write(', ');
+        if (i > 0) inputStream.write(' ');
         inputStream.write(current2.toString());
         list2.push(current2);
         current2 += Math.floor(Math.random() * 10) + 1;
     }
-    inputStream.write(']\n');
+    inputStream.write('\n');
     inputStream.end();
     
     // Merge arrays using two-pointer approach and write directly
-    outputStream.write('[');
     let i = 0, j = 0, count = 0;
     
     while (i < m && j < n) {
-        if (count > 0) outputStream.write(', ');
+        if (count > 0) outputStream.write(' ');
         if (list1[i] <= list2[j]) {
             outputStream.write(list1[i].toString());
             i++;
@@ -112,20 +109,20 @@ function generateLargeTestCase(caseNum, m, n) {
     }
     
     while (i < m) {
-        if (count > 0) outputStream.write(', ');
+        if (count > 0) outputStream.write(' ');
         outputStream.write(list1[i].toString());
         i++;
         count++;
     }
     
     while (j < n) {
-        if (count > 0) outputStream.write(', ');
+        if (count > 0) outputStream.write(' ');
         outputStream.write(list2[j].toString());
         j++;
         count++;
     }
     
-    outputStream.write(']\n');
+    outputStream.write('\n');
     outputStream.end();
     
     console.log(`Generated LARGE test case ${caseNum}: m=${m}, n=${n}, total=${m + n}`);

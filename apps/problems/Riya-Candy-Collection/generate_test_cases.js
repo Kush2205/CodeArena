@@ -41,19 +41,19 @@ function generateTestCase(caseNum) {
     }
     
     // Write input file
-    const inputPath = path.join(__dirname, 'test_cases', `input_${caseNum}.txt`);
+    const inputPath = path.join(__dirname, 'test_cases', `${caseNum}.in.txt`);
     fs.writeFileSync(inputPath, `${favorites}\n${candies}\n`);
     
     // Write output file
-    const outputPath = path.join(__dirname, 'test_cases', `output_${caseNum}.txt`);
+    const outputPath = path.join(__dirname, 'test_cases', `${caseNum}.out.txt`);
     fs.writeFileSync(outputPath, `${count}\n`);
     
     console.log(`Generated test case ${caseNum}: favLen=${favLength}, candyLen=${candyLength}, result=${count}`);
 }
 
 function generateLargeTestCase(caseNum, length) {
-    const inputPath = path.join(__dirname, 'test_cases', `input_${caseNum}.txt`);
-    const outputPath = path.join(__dirname, 'test_cases', `output_${caseNum}.txt`);
+    const inputPath = path.join(__dirname, 'test_cases', `${caseNum}.in.txt`);
+    const outputPath = path.join(__dirname, 'test_cases', `${caseNum}.out.txt`);
     
     const inputStream = fs.createWriteStream(inputPath);
     

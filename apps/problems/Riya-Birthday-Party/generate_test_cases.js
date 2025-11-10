@@ -41,12 +41,12 @@ function generateTestCase(caseNum, n) {
     // Calculate the actual answer
     const result = calculateMaximumInvitations(favorite);
     
-    // Write input file
-    const inputPath = path.join(__dirname, 'test_cases', `input_${caseNum}.txt`);
-    fs.writeFileSync(inputPath, `[${favorite.join(', ')}]\n`);
+    // Write input file - space-separated
+    const inputPath = path.join(__dirname, 'test_cases', `${caseNum}.in.txt`);
+    fs.writeFileSync(inputPath, `${favorite.join(' ')}\n`);
     
     // Write output file
-    const outputPath = path.join(__dirname, 'test_cases', `output_${caseNum}.txt`);
+    const outputPath = path.join(__dirname, 'test_cases', `${caseNum}.out.txt`);
     fs.writeFileSync(outputPath, `${result}\n`);
     
     console.log(`Generated test case ${caseNum}: n=${n}, result=${result}`);

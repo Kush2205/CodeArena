@@ -57,13 +57,18 @@ function generateTestCase(caseNum, k, n) {
     const result = findCombinations(k, n);
     
     // Write input file
-    const inputPath = path.join(__dirname, 'test_cases', `input_${caseNum}.txt`);
+    const inputPath = path.join(__dirname, 'test_cases', `${caseNum}.in.txt`);
     fs.writeFileSync(inputPath, `${k}\n${n}\n`);
     
-    // Write output file
-    const outputPath = path.join(__dirname, 'test_cases', `output_${caseNum}.txt`);
-    const outputStr = result.length === 0 ? '[]' : JSON.stringify(result);
-    fs.writeFileSync(outputPath, `${outputStr}\n`);
+    // Write output file - space-separated format for 2D arrays
+    const outputPath = path.join(__dirname, 'test_cases', `${caseNum}.out.txt`);
+    let outputStr = '';
+    if (result.length === 0) {
+        outputStr = '';
+    } else {
+        outputStr = result.map(arr => arr.join(' ')).join('\n') + '\n';
+    }
+    fs.writeFileSync(outputPath, outputStr);
     
     console.log(`Generated test case ${caseNum}: k=${k}, n=${n}, combinations=${result.length}`);
 }
