@@ -164,17 +164,13 @@ export async function GET(
             where: { id: submission.problemId },
             select: {
               totalPoints: true,
-              _count: {
-                select: {
-                  testCases: true,
-                },
-              },
             },
           });
 
-          // Calculate points per test case (totalPoints / number of test cases)
-          const pointsPerTestCase = problem
-            ? Math.floor(problem.totalPoints / problem._count.testCases)
+          // Calculate points per test case based on TOTAL test cases in submission (not just visible ones in DB)
+          // This ensures points are distributed across all test cases (including hidden ones)
+          const pointsPerTestCase = problem && submission.totalTestCases
+            ? Math.floor(problem.totalPoints / submission.totalTestCases)
             : 10; // fallback to 10 if problem not found
 
           // Award points only for newly passed test cases
