@@ -1,6 +1,6 @@
 class Solution {
 public:
-    void findGiftCombinations(int k, int n) {
+    vector<vector<int>> findGiftCombinations(int k, int n) {
         // User Code Starts
 
         // User Code Ends

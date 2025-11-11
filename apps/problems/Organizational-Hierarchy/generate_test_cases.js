@@ -28,11 +28,58 @@ function generateOrganizationalHierarchyTestCases() {
     generateTestCase(17, 150);
     
     // Test cases 18-19: Large trees for TLE detection
-    generateTestCase(18, 1000); // 1000 nodes
-    generateTestCase(19, 1000); // 1000 nodes
+    generateSkewedTestCase(18, 15000); // Deep tree with many nodes
+    generateSkewedTestCase(19, 20000); // Even deeper with more nodes
 
     console.log('✅ Generated 20 test cases for Organizational-Hierarchy (0-19)');
 }
+
+function generateSkewedTestCase(caseNum, numNodes) {
+    // Create a VERY deep left-skewed tree
+    // Strategy: use a large array size to allow deep nesting
+    const arraySize = numNodes * 10; // 10x larger array for deeper trees
+    const tree = new Array(arraySize).fill(null);
+    
+    // Create a left-only path that goes very deep
+    let nodesPlaced = 0;
+    let currentIdx = 0;
+    
+    while (nodesPlaced < numNodes && currentIdx < arraySize) {
+        tree[currentIdx] = Math.floor(Math.random() * 2001) - 1000;
+        nodesPlaced++;
+        
+        // Move to left child most of the time
+        if (Math.random() < 0.95) {
+            currentIdx = 2 * currentIdx + 1; // go left
+        } else {
+            currentIdx = 2 * currentIdx + 2; // occasionally go right
+        }
+    }
+    
+    // Fill remaining nodes in a skewed manner
+    for (let i = 0; i < arraySize && nodesPlaced < numNodes; i++) {
+        if (tree[i] === null && Math.random() < 0.1) {
+            tree[i] = Math.floor(Math.random() * 2001) - 1000;
+            nodesPlaced++;
+        }
+    }
+    
+    // Calculate level order traversal
+    const result = calculateLevelOrder(tree);
+    
+    // Write input file
+    const inputPath = path.join(__dirname, 'test_cases', `${caseNum}.in.txt`);
+    const inputStr = tree.map(val => val === null ? 'null' : val).join(' ');
+    fs.writeFileSync(inputPath, `${inputStr}\n`);
+    
+    // Write output file
+    const outputPath = path.join(__dirname, 'test_cases', `${caseNum}.out.txt`);
+    const outputStr = result.map(level => level.join(' ')).join('\n') + '\n';
+    fs.writeFileSync(outputPath, outputStr);
+    
+    console.log(`Generated SKEWED test case ${caseNum}: actualNodes=${nodesPlaced}, levels=${result.length}, arraySize=${arraySize}`);
+}
+
 
 function generateTestCase(caseNum, numNodes) {
     if (numNodes === 0) {

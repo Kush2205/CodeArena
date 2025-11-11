@@ -41,8 +41,11 @@ function generateCppFullBoilerplate(problem: Problem): string {
     const returnType = output.length > 0 ? output[0].type : 'void';
     const cppTypeMap: Record<string, string> = {
         int: 'int', float: 'float', double: 'double', string: 'string', bool: 'bool',
-        char: 'char', 'long long': 'long long', 'int[]': 'vector<int>', 'float[]': 'vector<float>',
-        'double[]': 'vector<double>', 'string[]': 'vector<string>',
+        char: 'char', 'long long': 'long long', 
+        'int[]': 'vector<int>', 'float[]': 'vector<float>',
+        'double[]': 'vector<double>', 'string[]': 'vector<string>', 'bool[]': 'vector<bool>',
+        'int[][]': 'vector<vector<int>>', 'float[][]': 'vector<vector<float>>',
+        'double[][]': 'vector<vector<double>>', 'string[][]': 'vector<vector<string>>', 'bool[][]': 'vector<vector<bool>>',
         TreeNode: 'TreeNode*', ListNode: 'ListNode*',
         AdjacencyMatrix: 'vector<vector<int>>', AdjacencyList: 'vector<vector<int>>',
     };
@@ -65,7 +68,13 @@ function generateCppFullBoilerplate(problem: Problem): string {
         } else if (cppType === 'string') {
             return `    string ${i.name};\n    getline(cin, ${i.name});`;
         } else if (cppType === 'TreeNode*') {
-            return `    string line_${i.name};\n    getline(cin, line_${i.name});\n    TreeNode* ${i.name} = buildTree(line_${i.name});`;
+            return `    vector<string> tree_${i.name};
+    string line_${i.name};
+    getline(cin, line_${i.name});
+    istringstream iss_${i.name}(line_${i.name});
+    string node_${i.name};
+    while(iss_${i.name} >> node_${i.name}) tree_${i.name}.push_back(node_${i.name});
+    TreeNode* ${i.name} = tree_${i.name}.empty() ? nullptr : buildTreeFromArray(tree_${i.name}, 0);`;
         } else if (cppType === 'ListNode*') {
             return `    string line_${i.name};\n    getline(cin, line_${i.name});\n    ListNode* ${i.name} = buildList(line_${i.name});`;
         } else {
@@ -95,6 +104,7 @@ function generateCppFullBoilerplate(problem: Problem): string {
 
     let helpers = '';
     if (hasTree) {
+        helpers += `TreeNode* buildTreeFromArray(vector<string>& nodes, int index) {\n    if (index >= nodes.size() || nodes[index] == "null") {\n        return nullptr;\n    }\n    TreeNode* root = new TreeNode(stoi(nodes[index]));\n    root->left = buildTreeFromArray(nodes, 2 * index + 1);\n    root->right = buildTreeFromArray(nodes, 2 * index + 2);\n    return root;\n}\n\n`;
         helpers += `TreeNode* buildTree(string data) {\n    if (data.empty() || data == "null") return nullptr;\n    vector<string> tokens;\n    stringstream ss(data);\n    string token;\n    while (getline(ss, token, ',')) {\n        tokens.push_back(token);\n    }\n    // Trim whitespace from tokens\n    for (auto& t : tokens) {\n        t.erase(t.begin(), find_if(t.begin(), t.end(), [](int ch) { return !isspace(ch); }));\n        t.erase(find_if(t.rbegin(), t.rend(), [](int ch) { return !isspace(ch); }).base(), t.end());\n    }\n    if (tokens.empty() || tokens[0] == "null") return nullptr;\n    TreeNode* root = new TreeNode(stoi(tokens[0]));\n    queue<TreeNode*> q;\n    q.push(root);\n    size_t index = 1;\n    while (!q.empty() && index < tokens.size()) {\n        TreeNode* node = q.front();\n        q.pop();\n        if (index < tokens.size() && tokens[index] != "null") {\n            node->left = new TreeNode(stoi(tokens[index]));\n            q.push(node->left);\n        }\n        ++index;\n        if (index < tokens.size() && tokens[index] != "null") {\n            node->right = new TreeNode(stoi(tokens[index]));\n            q.push(node->right);\n        }\n        ++index;\n    }\n    return root;\n}\n\n`;
         helpers += `void printTree(TreeNode* root) {\n    if (!root) return;\n    queue<TreeNode*> q;\n    q.push(root);\n    vector<string> values;\n    while (!q.empty()) {\n        TreeNode* node = q.front();\n        q.pop();\n        if (node) {\n            values.push_back(to_string(node->val));\n            q.push(node->left);\n            q.push(node->right);\n        } else {\n            values.push_back("null");\n        }\n    }\n    while (!values.empty() && values.back() == "null") values.pop_back();\n    for (size_t i = 0; i < values.size(); ++i) {\n        if (i) cout << " ";\n        cout << values[i];\n    }\n    cout << endl;\n}\n\n`;
     }
@@ -104,11 +114,13 @@ function generateCppFullBoilerplate(problem: Problem): string {
     }
 
     const outputCode = returnType === 'void' ? '' :
-        returnType.endsWith('[]') || cppTypeMap[returnType].startsWith('vector') ?
+        returnType === 'int[][]' || returnType === 'float[][]' || returnType === 'double[][]' || 
+        returnType === 'string[][]' || returnType === 'bool[][]' || 
+        returnType === 'AdjacencyMatrix' || returnType === 'AdjacencyList' ? `    for(const auto& row : result) {\n        for(size_t i = 0; i < row.size(); ++i) {\n            if(i) cout << " ";\n            cout << row[i];\n        }\n        cout << endl;\n    }\n` :
+        returnType.endsWith('[]') || cppTypeMap[returnType]?.startsWith('vector') ?
         `    for(size_t i = 0; i < result.size(); i++){ if(i>0) cout<<" "; cout<<result[i]; }\n    cout<<endl;` :
         returnType === 'TreeNode' ? `    printTree(result);\n` :
         returnType === 'ListNode' ? `    printList(result);\n` :
-        returnType === 'AdjacencyMatrix' || returnType === 'AdjacencyList' ? `    for(const auto& row : result) {\n        for(size_t i = 0; i < row.size(); ++i) {\n            if(i) cout << " ";\n            cout << row[i];\n        }\n        cout << endl;\n    }\n` :
         `    cout<<result<<endl;`;
 
     return `#include <iostream>
@@ -134,6 +146,7 @@ function generateCppFullBoilerplate(problem: Problem): string {
 using namespace std;
 
 ${structs}${helpers}// User Code Starts
+
 // User Code Ends
 
 int main(){
@@ -151,7 +164,9 @@ function generatePythonFullBoilerplate(problem: Problem): string {
 
     const pyTypeMap: Record<string, string> = {
         int: 'int', float: 'float', double: 'float', string: 'str', bool: 'bool',
-        'int[]': 'List[int]', 'float[]': 'List[float]', 'double[]': 'List[float]', 'string[]': 'List[str]',
+        'int[]': 'List[int]', 'float[]': 'List[float]', 'double[]': 'List[float]', 'string[]': 'List[str]', 'bool[]': 'List[bool]',
+        'int[][]': 'List[List[int]]', 'float[][]': 'List[List[float]]', 'double[][]': 'List[List[float]]', 
+        'string[][]': 'List[List[str]]', 'bool[][]': 'List[List[bool]]',
         TreeNode: 'Optional[TreeNode]', ListNode: 'Optional[ListNode]',
         AdjacencyMatrix: 'List[List[int]]', AdjacencyList: 'List[List[int]]',
     };
@@ -184,10 +199,12 @@ function generatePythonFullBoilerplate(problem: Problem): string {
 
     const argsList = inputs.map(i => i.name).join(', ');
     const outputCode = returnType === 'None' ? '' :
+        returnType === 'int[][]' || returnType === 'float[][]' || returnType === 'double[][]' || 
+        returnType === 'string[][]' || returnType === 'bool[][]' || 
+        returnType === 'AdjacencyMatrix' || returnType === 'AdjacencyList' ? `    for row in result:\n        print(' '.join(map(str, row)))` :
         returnType.endsWith('[]') ? `    print(' '.join(map(str, result)))` :
         returnType === 'TreeNode' ? `    print_tree(result)` :
         returnType === 'ListNode' ? `    print_list(result)` :
-        returnType === 'AdjacencyMatrix' || returnType === 'AdjacencyList' ? `    for row in result:\n        print(' '.join(map(str, row)))` :
         `    print(result)`;
 
     let classes = '';
@@ -219,8 +236,11 @@ function generateJavaFullBoilerplate(problem: Problem): string {
     const returnType = output.length > 0 ? output[0].type : 'void';
     const javaTypeMap: Record<string, string> = {
         int: 'int', float: 'float', double: 'double', string: 'String', bool: 'boolean',
-        char: 'char', 'long long': 'long', 'int[]': 'int[]', 'float[]': 'float[]', 'double[]': 'double[]',
+        char: 'char', 'long long': 'long', 
+        'int[]': 'int[]', 'float[]': 'float[]', 'double[]': 'double[]',
         'string[]': 'String[]', 'bool[]': 'boolean[]', 'char[]': 'char[]',
+        'int[][]': 'int[][]', 'float[][]': 'float[][]', 'double[][]': 'double[][]',
+        'string[][]': 'String[][]', 'bool[][]': 'boolean[][]',
         TreeNode: 'TreeNode', ListNode: 'ListNode', AdjacencyMatrix: 'int[][]', AdjacencyList: 'List<List<Integer>>'
     };
     const returnTypeString = javaTypeMap[returnType] || returnType;
@@ -248,7 +268,8 @@ function generateJavaFullBoilerplate(problem: Problem): string {
     const outputCode = returnType === 'void' ? '' :
         returnType === 'TreeNode' ? `        System.out.println(printTree(result));` :
         returnType === 'ListNode' ? `        System.out.println(printList(result));` :
-        returnType === 'int[][]' ? `        for(int[] row : result){ for(int val : row) System.out.print(val + " "); System.out.println(); }` :
+        returnType === 'int[][]' || returnType === 'float[][]' || returnType === 'double[][]' || 
+        returnType === 'string[][]' || returnType === 'bool[][]' ? `        for(int i=0;i<result.length;i++){ for(int j=0;j<result[i].length;j++){ if(j>0) System.out.print(" "); System.out.print(result[i][j]); } System.out.println(); }` :
         returnType === 'List<List<Integer>>' ? `        for(List<Integer> list : result){ for(int val : list) System.out.print(val + " "); System.out.println(); }` :
         returnType.endsWith('[]') ? `        for(int i=0;i<result.length;i++){ if(i>0) System.out.print(" "); System.out.print(result[i]); }\n        System.out.println();` :
         `        System.out.println(result);`;
@@ -324,10 +345,12 @@ function generateJavaScriptFullBoilerplate(problem: Problem): string {
 
     const argsList = inputs.map(i => i.name).join(', ');
     const outputCode = returnType === 'None' ? '' :
+        returnType === 'int[][]' || returnType === 'float[][]' || returnType === 'double[][]' || 
+        returnType === 'string[][]' || returnType === 'bool[][]' || 
+        returnType === 'AdjacencyMatrix' || returnType === 'AdjacencyList' ? `result.forEach(row => console.log(row.join(' ')));` :
         returnType.endsWith('[]') ? `console.log(result.join(' '));` :
         returnType === 'TreeNode' ? `printTree(result);` :
         returnType === 'ListNode' ? `printList(result);` :
-        returnType === 'AdjacencyMatrix' || returnType === 'AdjacencyList' ? `result.forEach(row => console.log(row.join(' ')));` :
         `console.log(result);`;
 
     let classes = '';

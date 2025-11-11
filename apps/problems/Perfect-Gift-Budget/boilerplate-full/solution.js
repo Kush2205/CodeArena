@@ -8,4 +8,4 @@ const k = parseInt(inputLines[0]);
 const n = parseInt(inputLines[1]);
 const solution = new Solution();
 const result = solution.findGiftCombinations(k, n);
-console.log(result.join(' '));
+result.forEach(row => console.log(row.join(' ')));

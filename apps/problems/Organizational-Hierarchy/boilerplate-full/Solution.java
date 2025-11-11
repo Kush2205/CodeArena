@@ -63,7 +63,7 @@ public class Main{
         TreeNode root = buildTree(line_root);
         Solution solver = new Solution();
         int[][] result = solver.levelOrderTraversal(root);
-        for(int[] row : result){ for(int val : row) System.out.print(val + " "); System.out.println(); }
+        for(int i=0;i<result.length;i++){ for(int j=0;j<result[i].length;j++){ if(j>0) System.out.print(" "); System.out.print(result[i][j]); } System.out.println(); }
         scanner.close();
     }
 }

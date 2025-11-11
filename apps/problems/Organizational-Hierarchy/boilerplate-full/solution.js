@@ -58,4 +58,4 @@ function printTree(root) {
 const root = buildTree(inputLines[0]);
 const solution = new Solution();
 const result = solution.levelOrderTraversal(root);
-console.log(result.join(' '));
+result.forEach(row => console.log(row.join(' ')));

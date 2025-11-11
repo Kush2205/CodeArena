@@ -7,4 +7,5 @@ if __name__ == "__main__":
     n = int(input())
     solver = Solution()
     result = solver.findGiftCombinations(k, n)
-    print(' '.join(map(str, result)))
+    for row in result:
+        print(' '.join(map(str, row)))

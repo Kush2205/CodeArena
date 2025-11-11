@@ -50,8 +50,11 @@ function generateCppBoilerplate(problem: Problem): string {
 
     const cppTypeMap: Record<string, string> = {
         int:'int', float:'float', double:'double', string:'string', bool:'bool', char:'char',
-        'long long':'long long', 'int[]':'vector<int>', 'float[]':'vector<float>',
-        'double[]':'vector<double>', 'string[]':'vector<string>',
+        'long long':'long long', 
+        'int[]':'vector<int>', 'float[]':'vector<float>',
+        'double[]':'vector<double>', 'string[]':'vector<string>', 'bool[]':'vector<bool>',
+        'int[][]':'vector<vector<int>>', 'float[][]':'vector<vector<float>>',
+        'double[][]':'vector<vector<double>>', 'string[][]':'vector<vector<string>>', 'bool[][]':'vector<vector<bool>>',
         TreeNode: 'TreeNode*', ListNode: 'ListNode*',
         AdjacencyMatrix: 'vector<vector<int>>', AdjacencyList: 'vector<vector<int>>'
     };
@@ -101,6 +104,12 @@ function generatePythonBoilerplate(problem: Problem): string {
         'float[]': 'List[float]',
         'double[]': 'List[float]',
         'string[]': 'List[str]',
+        'bool[]': 'List[bool]',
+        'int[][]': 'List[List[int]]',
+        'float[][]': 'List[List[float]]',
+        'double[][]': 'List[List[float]]',
+        'string[][]': 'List[List[str]]',
+        'bool[][]': 'List[List[bool]]',
         'TreeNode': 'Optional[TreeNode]',
         'ListNode': 'Optional[ListNode]',
         'AdjacencyMatrix': 'List[List[int]]',
@@ -153,7 +162,9 @@ function generateJavaBoilerplate(problem: Problem): string {
 
     const javaTypeMap: Record<string,string> = {
         int:'int', float:'float', double:'double', string:'String', bool:'boolean', char:'char',
-        'long long':'long', 'int[]':'int[]', 'float[]':'float[]', 'double[]':'double[]', 'string[]':'String[]',
+        'long long':'long', 
+        'int[]':'int[]', 'float[]':'float[]', 'double[]':'double[]', 'string[]':'String[]', 'bool[]':'boolean[]',
+        'int[][]':'int[][]', 'float[][]':'float[][]', 'double[][]':'double[][]', 'string[][]':'String[][]', 'bool[][]':'boolean[][]',
         TreeNode: 'TreeNode', ListNode: 'ListNode', AdjacencyMatrix: 'int[][]', AdjacencyList: 'List<List<Integer>>'
     };
 
@@ -181,8 +192,9 @@ function generateCBoilerplate(problem: Problem): string {
 
     const cTypeMap: Record<string, string> = {
         int:'int', float:'float', double:'double', string:'char*', bool:'bool', char:'char',
-        'long long':'long long', 'int[]':'int*', 'float[]':'float*',
-        'double[]':'double*', 'string[]':'char**',
+        'long long':'long long', 
+        'int[]':'int*', 'float[]':'float*', 'double[]':'double*', 'string[]':'char**', 'bool[]':'bool*',
+        'int[][]':'int**', 'float[][]':'float**', 'double[][]':'double**', 'string[][]':'char***', 'bool[][]':'bool**',
         TreeNode: 'struct TreeNode*', ListNode: 'struct ListNode*',
         AdjacencyMatrix: 'int**', AdjacencyList: 'int**'
     };

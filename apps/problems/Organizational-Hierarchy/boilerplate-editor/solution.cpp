@@ -7,7 +7,7 @@
 
 class Solution {
 public:
-    void levelOrderTraversal(TreeNode*& root) {
+    vector<vector<int>> levelOrderTraversal(TreeNode*& root) {
         // User Code Starts
 
         // User Code Ends

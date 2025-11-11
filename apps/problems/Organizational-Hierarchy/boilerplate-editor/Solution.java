@@ -6,7 +6,7 @@
 // }
 
 class Solution {
-    public void levelOrderTraversal(TreeNode root) {
+    public int[][] levelOrderTraversal(TreeNode root) {
         // User Code Starts
 
         // User Code Ends

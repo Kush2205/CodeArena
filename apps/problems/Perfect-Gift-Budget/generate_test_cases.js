@@ -10,11 +10,23 @@ function generatePerfectGiftBudgetTestCases() {
         fs.mkdirSync(testCasesDir, { recursive: true });
     }
 
-    // Test cases 3-17: Various k and n combinations
+    // Test cases 3-17: Various k and n combinations (ensure they have solutions)
     const testCases = [
-        [2, 3], [2, 5], [3, 15], [4, 10], [5, 15],
-        [5, 20], [6, 21], [6, 30], [7, 28], [7, 35],
-        [8, 36], [8, 40], [9, 45], [9, 50], [9, 55]
+        [2, 3],   // [[1,2]]
+        [2, 5],   // [[1,4],[2,3]]
+        [3, 7],   // [[1,2,4]]
+        [3, 9],   // [[1,2,6],[1,3,5],[2,3,4]]
+        [4, 10],  // [[1,2,3,4]]
+        [4, 14],  // multiple combinations
+        [5, 15],  // [[1,2,3,4,5]]
+        [5, 20],  // multiple combinations
+        [6, 21],  // [[1,2,3,4,5,6]]
+        [6, 25],  // multiple combinations
+        [7, 28],  // [[1,2,3,4,5,6,7]]
+        [7, 32],  // multiple combinations
+        [8, 36],  // [[1,2,3,4,5,6,7,8]]
+        [8, 40],  // multiple combinations
+        [9, 45],  // [[1,2,3,4,5,6,7,8,9]]
     ];
     
     for (let i = 0; i < testCases.length; i++) {
@@ -22,9 +34,10 @@ function generatePerfectGiftBudgetTestCases() {
         generateTestCase(i + 3, k, n);
     }
     
-    // Test cases 18-19: Complex backtracking scenarios
-    generateTestCase(18, 9, 58); // Many combinations
-    generateTestCase(19, 9, 59); // Many combinations
+    // Test cases 18-19: TLE-prone cases with maximum backtracking
+    // These require the most backtracking attempts to find solutions
+    generateTestCase(18, 7, 34); // 470 backtracking calls, 4 combinations
+    generateTestCase(19, 7, 33); // 460 backtracking calls, 3 combinations
 
     console.log('✅ Generated 20 test cases for Perfect-Gift-Budget (0-19)');
 }

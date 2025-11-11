@@ -52,4 +52,5 @@ if __name__ == "__main__":
     root = build_tree(line)
     solver = Solution()
     result = solver.levelOrderTraversal(root)
-    print(' '.join(map(str, result)))
+    for row in result:
+        print(' '.join(map(str, row)))

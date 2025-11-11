@@ -21,6 +21,7 @@
 using namespace std;
 
 // User Code Starts
+
 // User Code Ends
 
 int main(){
@@ -30,8 +31,14 @@ int main(){
     cin >> n;
 
     Solution solver;
-    int[][] result = solver.findGiftCombinations(k, n);
-    for(size_t i = 0; i < result.size(); i++){ if(i>0) cout<<" "; cout<<result[i]; }
-    cout<<endl;
+    vector<vector<int>> result = solver.findGiftCombinations(k, n);
+    for(const auto& row : result) {
+        for(size_t i = 0; i < row.size(); ++i) {
+            if(i) cout << " ";
+            cout << row[i];
+        }
+        cout << endl;
+    }
+
     return 0;
 }

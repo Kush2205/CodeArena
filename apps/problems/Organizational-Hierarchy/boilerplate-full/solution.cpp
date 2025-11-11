@@ -27,6 +27,16 @@ struct TreeNode {
     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
 };
 
+TreeNode* buildTreeFromArray(vector<string>& nodes, int index) {
+    if (index >= nodes.size() || nodes[index] == "null") {
+        return nullptr;
+    }
+    TreeNode* root = new TreeNode(stoi(nodes[index]));
+    root->left = buildTreeFromArray(nodes, 2 * index + 1);
+    root->right = buildTreeFromArray(nodes, 2 * index + 2);
+    return root;
+}
+
 TreeNode* buildTree(string data) {
     if (data.empty() || data == "null") return nullptr;
     vector<string> tokens;
@@ -87,16 +97,27 @@ void printTree(TreeNode* root) {
 }
 
 // User Code Starts
+
 // User Code Ends
 
 int main(){
+    vector<string> tree_root;
     string line_root;
     getline(cin, line_root);
-    TreeNode* root = buildTree(line_root);
+    istringstream iss_root(line_root);
+    string node_root;
+    while(iss_root >> node_root) tree_root.push_back(node_root);
+    TreeNode* root = tree_root.empty() ? nullptr : buildTreeFromArray(tree_root, 0);
 
     Solution solver;
-    int[][] result = solver.levelOrderTraversal(root);
-    for(size_t i = 0; i < result.size(); i++){ if(i>0) cout<<" "; cout<<result[i]; }
-    cout<<endl;
+    vector<vector<int>> result = solver.levelOrderTraversal(root);
+    for(const auto& row : result) {
+        for(size_t i = 0; i < row.size(); ++i) {
+            if(i) cout << " ";
+            cout << row[i];
+        }
+        cout << endl;
+    }
+
     return 0;
 }

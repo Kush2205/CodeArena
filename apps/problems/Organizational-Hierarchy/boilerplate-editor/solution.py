@@ -5,7 +5,7 @@
 #         self.right = right
 
 class Solution:
-    def levelOrderTraversal(self, root: Optional[TreeNode]) -> Any:
+    def levelOrderTraversal(self, root: Optional[TreeNode]) -> List[List[int]]:
         # User Code Starts
 
         # User Code Ends
