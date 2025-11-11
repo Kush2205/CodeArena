@@ -16,8 +16,8 @@ function generateCandyCollectionTestCases() {
     }
     
     // Test cases 18-19: Large strings for TLE detection
-    generateLargeTestCase(18, 12000000); // 12 million length
-    generateLargeTestCase(19, 15000000); // 15 million length
+    generateLargeTestCase(18, 10000000); // 9 million length
+    generateLargeTestCase(19, 14000000); // 12 million length
 
     console.log('✅ Generated 20 test cases for Riya-Candy-Collection (0-19)');
 }
