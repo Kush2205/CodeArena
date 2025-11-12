@@ -13,7 +13,7 @@ class TreeNode {
 public class Main{
     static TreeNode buildTree(String data) {
         if (data == null || data.equals("null")) return null;
-        String[] tokens = data.split(",");
+        String[] tokens = data.split(" ");
         for (int i = 0; i < tokens.length; i++) tokens[i] = tokens[i].trim();
         if (tokens.length == 0 || tokens[0].equals("null")) return null;
         TreeNode root = new TreeNode(Integer.parseInt(tokens[0]));

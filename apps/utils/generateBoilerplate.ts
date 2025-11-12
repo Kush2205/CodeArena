@@ -201,6 +201,8 @@ function generateCBoilerplate(problem: Problem): string {
 
     // For array return types in C, we need a returnSize parameter
     const needsReturnSize = returnType.endsWith('[]');
+    const is2DArray = returnType === 'int[][]' || returnType === 'float[][]' || returnType === 'double[][]' || 
+                      returnType === 'string[][]' || returnType === 'bool[][]';
     const argsListParts = inputs.map(i => {
         const cType = cTypeMap[i.type] || i.type;
         // For graphs and arrays, we need to pass size parameter
@@ -211,6 +213,9 @@ function generateCBoilerplate(problem: Problem): string {
     });
     if (needsReturnSize) {
         argsListParts.push('int* returnSize');
+        if (is2DArray) {
+            argsListParts.push('int** returnColumnSizes');
+        }
     }
     const argsList = argsListParts.join(', ');
     const returnTypeStr = cTypeMap[returnType] || 'void';

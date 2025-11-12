@@ -11,7 +11,7 @@ class TreeNode {
 
 function buildTree(data) {
     if (!data || data === "null") return null;
-    const tokens = data.split(',').map(t => t.trim());
+    const tokens = data.split(' ').map(t => t.trim());
     if (tokens.length === 0 || tokens[0] === "null") return null;
     const root = new TreeNode(parseInt(tokens[0]));
     const queue = [root];

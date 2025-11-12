@@ -78,11 +78,14 @@ int main() {
         struct TreeNode* root = buildTree(root_str);
 
     int returnSize = 0;
-    int[][] result = levelOrderTraversal(root, &returnSize);
+    int* returnColumnSizes = NULL;
+    int** result = levelOrderTraversal(root, &returnSize, &returnColumnSizes);
     for(int i=0; i<returnSize; i++) {
-        if(i>0) printf(" ");
-        printf("%d", result[i]);
+        for(int j=0; j<returnColumnSizes[i]; j++) {
+            if(j>0) printf(" ");
+            printf("%d", result[i][j]);
+        }
+        printf("\n");
     }
-    printf("\n");
     return 0;
 }

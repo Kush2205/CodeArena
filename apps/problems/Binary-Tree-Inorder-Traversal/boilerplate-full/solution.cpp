@@ -27,18 +27,23 @@ struct TreeNode {
     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
 };
 
+TreeNode* buildTreeFromArray(vector<string>& nodes, int index) {
+    if (index >= nodes.size() || nodes[index] == "null") {
+        return nullptr;
+    }
+    TreeNode* root = new TreeNode(stoi(nodes[index]));
+    root->left = buildTreeFromArray(nodes, 2 * index + 1);
+    root->right = buildTreeFromArray(nodes, 2 * index + 2);
+    return root;
+}
+
 TreeNode* buildTree(string data) {
     if (data.empty() || data == "null") return nullptr;
     vector<string> tokens;
     stringstream ss(data);
     string token;
-    while (getline(ss, token, ',')) {
+    while (ss >> token) {
         tokens.push_back(token);
-    }
-    // Trim whitespace from tokens
-    for (auto& t : tokens) {
-        t.erase(t.begin(), find_if(t.begin(), t.end(), [](int ch) { return !isspace(ch); }));
-        t.erase(find_if(t.rbegin(), t.rend(), [](int ch) { return !isspace(ch); }).base(), t.end());
     }
     if (tokens.empty() || tokens[0] == "null") return nullptr;
     TreeNode* root = new TreeNode(stoi(tokens[0]));
@@ -87,12 +92,17 @@ void printTree(TreeNode* root) {
 }
 
 // User Code Starts
+
 // User Code Ends
 
 int main(){
+    vector<string> tree_root;
     string line_root;
     getline(cin, line_root);
-    TreeNode* root = buildTree(line_root);
+    istringstream iss_root(line_root);
+    string node_root;
+    while(iss_root >> node_root) tree_root.push_back(node_root);
+    TreeNode* root = tree_root.empty() ? nullptr : buildTreeFromArray(tree_root, 0);
 
     Solution solver;
     vector<int> result = solver.inorderTraversal(root);
