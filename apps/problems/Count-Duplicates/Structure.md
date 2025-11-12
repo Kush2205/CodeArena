@@ -1,5 +1,7 @@
 Problem Name : count duplicates
 
+Difficulty : medium
+
 Function Name : countDuplicates
 
 Input Structure:

@@ -1,5 +1,7 @@
 Problem Name : subarray with sum
 
+Difficulty : medium
+
 Function Name : subArraySum
 
 Input Structure:

@@ -1,5 +1,7 @@
 Problem Name : add two arrays
 
+Difficulty : easy
+
 Function Name : addTwoArrays
 
 Input Structure:

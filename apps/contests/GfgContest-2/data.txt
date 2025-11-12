@@ -1,5 +1,0 @@
-Add-Two-Arrays
-Count-Even-Numbers
-Find-Maximum
-Reverse-Array
-Sum-Of-Array

@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateFullCode } from "../../../../../utils/generateFullCode";
 import { generateTestCases } from "../../../../../utils/generateTestCases";
+import prisma from "@repo/db/client";
 
 const languageIdMap: Record<string, number> = {
+  c: 50,
   cpp: 54,
   python: 71,
   java: 62,
@@ -57,7 +59,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { source_code, language, problemName } = await req.json();
+    const userId = parseInt(userIdHeader, 10);
+    if (Number.isNaN(userId)) {
+      return NextResponse.json({ error: "Invalid user" }, { status: 400 });
+    }
+
+    const { source_code, language, problemName, contestId } = await req.json();
+
+    const contestIdNumber =
+      contestId !== undefined && contestId !== null && contestId !== ""
+        ? Number(contestId)
+        : null;
+
+    if (contestIdNumber !== null && Number.isNaN(contestIdNumber)) {
+      return NextResponse.json({ error: "Invalid contest" }, { status: 400 });
+    }
+
+    if (contestIdNumber !== null) {
+      const disqualification = await prisma.disqualified.findFirst({
+        where: {
+          userId,
+          contestId: contestIdNumber,
+          disqualified: true,
+        },
+      });
+
+      if (disqualification) {
+        return NextResponse.json(
+          {
+            error: "You have been disqualified from this contest and cannot run code.",
+            code: "DISQUALIFIED",
+          },
+          { status: 403 }
+        );
+      }
+    }
 
     if (!languageIdMap[language]) {
       return NextResponse.json({ error: "Unsupported language" }, { status: 400 });

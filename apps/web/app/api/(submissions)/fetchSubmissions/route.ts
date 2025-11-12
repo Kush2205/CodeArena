@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
             verdict: true,
             passedTestCases: true,
             totalTestCases: true,
+            points: true,
             language: true,
             code: true,
             createdAt: true,

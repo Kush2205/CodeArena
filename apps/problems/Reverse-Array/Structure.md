@@ -1,5 +1,7 @@
 Problem Name : reverse array
 
+Difficulty : easy
+
 Function Name : reverseArray
 
 Input Structure:

@@ -1,6 +1,5 @@
 from typing import List
 # User Code Starts
-
 # User Code Ends
 
 if __name__ == "__main__":

@@ -1,5 +1,7 @@
 Problem Name : find maximum
 
+Difficulty : easy
+
 Function Name : findMaximum
 
 Input Structure:

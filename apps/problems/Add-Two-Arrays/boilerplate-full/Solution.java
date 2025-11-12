@@ -1,7 +1,6 @@
 import java.util.*;
 
 // User Code Starts
-
 // User Code Ends
 
 public class Main{
@@ -19,7 +18,6 @@ public class Main{
         for(int i=0;i<tokens_b.length;i++){
             b[i] = Integer.parseInt(tokens_b[i]);
         }
-
         Solution solver = new Solution();
         int[] result = solver.addTwoArrays(a, b);
         for(int i=0;i<result.length;i++){ if(i>0) System.out.print(" "); System.out.print(result[i]); }

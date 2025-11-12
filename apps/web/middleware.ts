@@ -6,7 +6,7 @@ const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'secret');
 export async function middleware(request: NextRequest) {
     const token = request.headers.get('Authorization');
     
-    const protectedPaths = ['/api/submission', '/api/fetchSubmissions', '/api/run'];
+    const protectedPaths = ['/api/submission', '/api/fetchSubmissions', '/api/run', '/api/violation', '/api/violation/disqualification', '/api/user/stats'];
     const isProtected = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path));
     
     if (isProtected) {
@@ -23,11 +23,10 @@ export async function middleware(request: NextRequest) {
 
         try {
             const cleanToken = token.startsWith('Bearer ') ? token.slice(7) : token;
-            console.log('Clean token length:', cleanToken.length);
-            console.log('Secret length:', secret.length);
+            
             
             const { payload } = await jwtVerify(cleanToken, secret);
-            console.log('Decoded payload:', payload);
+           
             
             if (!payload.userId) {
                 console.log('No userId in payload');
@@ -39,7 +38,7 @@ export async function middleware(request: NextRequest) {
 
             const requestHeaders = new Headers(request.headers);
             requestHeaders.set('x-user-id', payload.userId.toString());
-            console.log('Setting x-user-id:', payload.userId);
+          
 
             return NextResponse.next({
                 request: {
@@ -69,5 +68,8 @@ export const config = {
         '/api/submission/:path*',
         '/api/fetchSubmissions/:path*',
         '/api/run/:path*',
+        '/api/violation/:path*',
+        '/api/violation/disqualification/:path*',
+        '/api/user/stats/:path*',
     ],
 };

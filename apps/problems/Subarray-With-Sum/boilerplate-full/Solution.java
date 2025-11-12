@@ -1,7 +1,6 @@
 import java.util.*;
 
 // User Code Starts
-
 // User Code Ends
 
 public class Main{
@@ -13,8 +12,7 @@ public class Main{
         for(int i=0;i<tokens_arr.length;i++){
             arr[i] = Integer.parseInt(tokens_arr[i]);
         }
-        double target = scanner.next;
-
+        double target = scanner.nextDouble();
         Solution solver = new Solution();
         double result = solver.subArraySum(arr, target);
         System.out.println(result);
