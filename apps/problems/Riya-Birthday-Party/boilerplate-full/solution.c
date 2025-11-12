@@ -8,11 +8,12 @@
 // User Code Ends
 
 int main() {
-        char line_favorite[10000];
-        fgets(line_favorite, sizeof(line_favorite), stdin);
+    char* token = NULL;
+        char* line_favorite = (char*)malloc(1000000 * sizeof(char));
+        fgets(line_favorite, 1000000, stdin);
         int favorite_size = 0;
-        int* favorite = (int*)malloc(1000 * sizeof(int));
-        char* token = strtok(line_favorite, " \t\n");
+        int* favorite = (int*)malloc(100000 * sizeof(int));
+        token = strtok(line_favorite, " \t\n");
         while (token != NULL) {
             favorite[favorite_size++] = atoi(token);
             token = strtok(NULL, " \t\n");

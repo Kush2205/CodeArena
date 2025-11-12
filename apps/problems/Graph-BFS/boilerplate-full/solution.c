@@ -8,6 +8,7 @@
 // User Code Ends
 
 int main() {
+    char* token = NULL;
         int graph_vertices;
         scanf("%d", &graph_vertices);
         // Create adjacency matrix (n x n)
@@ -17,10 +18,10 @@ int main() {
         }
         // Read adjacency list and convert to matrix
         for(int i=0; i<graph_vertices; i++) {
-            char line[1000];
+            char* line = (char*)malloc(1000000 * sizeof(char));
             scanf(" ");
-            fgets(line, sizeof(line), stdin);
-            char* token = strtok(line, " \t\n");
+            fgets(line, 1000000, stdin);
+            token = strtok(line, " \t\n");
             while (token != NULL) {
                 int neighbor = atoi(token);
                 graph[i][neighbor] = 1;

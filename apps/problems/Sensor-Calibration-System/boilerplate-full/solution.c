@@ -8,11 +8,12 @@
 // User Code Ends
 
 int main() {
-        char line_nums[10000];
-        fgets(line_nums, sizeof(line_nums), stdin);
+    char* token = NULL;
+        char* line_nums = (char*)malloc(1000000 * sizeof(char));
+        fgets(line_nums, 1000000, stdin);
         int nums_size = 0;
-        int* nums = (int*)malloc(1000 * sizeof(int));
-        char* token = strtok(line_nums, " \t\n");
+        int* nums = (int*)malloc(100000 * sizeof(int));
+        token = strtok(line_nums, " \t\n");
         while (token != NULL) {
             nums[nums_size++] = atoi(token);
             token = strtok(NULL, " \t\n");

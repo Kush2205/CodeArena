@@ -8,9 +8,9 @@
 // User Code Ends
 
 int main() {
-        char favorites[1000];
+        char* favorites = (char*)malloc(20000000 * sizeof(char));
         scanf("%s", favorites);
-        char candies[1000];
+        char* candies = (char*)malloc(20000000 * sizeof(char));
         scanf("%s", candies);
 
     int result = countFavoriteCandies(favorites, candies);

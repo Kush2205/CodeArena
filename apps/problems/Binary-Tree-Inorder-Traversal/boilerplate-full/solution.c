@@ -11,7 +11,7 @@ struct TreeNode {
 
 struct TreeNode* buildTree(char* data) {
     if (!data || strcmp(data, "null") == 0) return NULL;
-    char* token = strtok(data, ",");
+    char* token = strtok(data, " \t\n");
     if (!token) return NULL;
     struct TreeNode* root = (struct TreeNode*)malloc(sizeof(struct TreeNode));
     root->val = atoi(token);
@@ -21,14 +21,14 @@ struct TreeNode* buildTree(char* data) {
     queue[rear++] = root;
     while (front < rear) {
         struct TreeNode* node = queue[front++];
-        token = strtok(NULL, ",");
+        token = strtok(NULL, " \t\n");
         if (token && strcmp(token, "null") != 0) {
             node->left = (struct TreeNode*)malloc(sizeof(struct TreeNode));
             node->left->val = atoi(token);
             node->left->left = node->left->right = NULL;
             queue[rear++] = node->left;
         }
-        token = strtok(NULL, ",");
+        token = strtok(NULL, " \t\n");
         if (token && strcmp(token, "null") != 0) {
             node->right = (struct TreeNode*)malloc(sizeof(struct TreeNode));
             node->right->val = atoi(token);
@@ -73,7 +73,7 @@ void printTree(struct TreeNode* root) {
 // User Code Ends
 
 int main() {
-        char root_str[10000];
+        char* root_str = (char*)malloc(1000000 * sizeof(char));
         scanf("%s", root_str);
         struct TreeNode* root = buildTree(root_str);
 

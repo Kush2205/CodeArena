@@ -105,7 +105,7 @@ function generateCppFullBoilerplate(problem: Problem): string {
     let helpers = '';
     if (hasTree) {
         helpers += `TreeNode* buildTreeFromArray(vector<string>& nodes, int index) {\n    if (index >= nodes.size() || nodes[index] == "null") {\n        return nullptr;\n    }\n    TreeNode* root = new TreeNode(stoi(nodes[index]));\n    root->left = buildTreeFromArray(nodes, 2 * index + 1);\n    root->right = buildTreeFromArray(nodes, 2 * index + 2);\n    return root;\n}\n\n`;
-        helpers += `TreeNode* buildTree(string data) {\n    if (data.empty() || data == "null") return nullptr;\n    vector<string> tokens;\n    stringstream ss(data);\n    string token;\n    while (getline(ss, token, ',')) {\n        tokens.push_back(token);\n    }\n    // Trim whitespace from tokens\n    for (auto& t : tokens) {\n        t.erase(t.begin(), find_if(t.begin(), t.end(), [](int ch) { return !isspace(ch); }));\n        t.erase(find_if(t.rbegin(), t.rend(), [](int ch) { return !isspace(ch); }).base(), t.end());\n    }\n    if (tokens.empty() || tokens[0] == "null") return nullptr;\n    TreeNode* root = new TreeNode(stoi(tokens[0]));\n    queue<TreeNode*> q;\n    q.push(root);\n    size_t index = 1;\n    while (!q.empty() && index < tokens.size()) {\n        TreeNode* node = q.front();\n        q.pop();\n        if (index < tokens.size() && tokens[index] != "null") {\n            node->left = new TreeNode(stoi(tokens[index]));\n            q.push(node->left);\n        }\n        ++index;\n        if (index < tokens.size() && tokens[index] != "null") {\n            node->right = new TreeNode(stoi(tokens[index]));\n            q.push(node->right);\n        }\n        ++index;\n    }\n    return root;\n}\n\n`;
+        helpers += `TreeNode* buildTree(string data) {\n    if (data.empty() || data == "null") return nullptr;\n    vector<string> tokens;\n    stringstream ss(data);\n    string token;\n    while (ss >> token) {\n        tokens.push_back(token);\n    }\n    if (tokens.empty() || tokens[0] == "null") return nullptr;\n    TreeNode* root = new TreeNode(stoi(tokens[0]));\n    queue<TreeNode*> q;\n    q.push(root);\n    size_t index = 1;\n    while (!q.empty() && index < tokens.size()) {\n        TreeNode* node = q.front();\n        q.pop();\n        if (index < tokens.size() && tokens[index] != "null") {\n            node->left = new TreeNode(stoi(tokens[index]));\n            q.push(node->left);\n        }\n        ++index;\n        if (index < tokens.size() && tokens[index] != "null") {\n            node->right = new TreeNode(stoi(tokens[index]));\n            q.push(node->right);\n        }\n        ++index;\n    }\n    return root;\n}\n\n`;
         helpers += `void printTree(TreeNode* root) {\n    if (!root) return;\n    queue<TreeNode*> q;\n    q.push(root);\n    vector<string> values;\n    while (!q.empty()) {\n        TreeNode* node = q.front();\n        q.pop();\n        if (node) {\n            values.push_back(to_string(node->val));\n            q.push(node->left);\n            q.push(node->right);\n        } else {\n            values.push_back("null");\n        }\n    }\n    while (!values.empty() && values.back() == "null") values.pop_back();\n    for (size_t i = 0; i < values.size(); ++i) {\n        if (i) cout << " ";\n        cout << values[i];\n    }\n    cout << endl;\n}\n\n`;
     }
     if (hasList) {
@@ -219,7 +219,7 @@ function generatePythonFullBoilerplate(problem: Problem): string {
 
     let helpers = '';
     if (hasTree) {
-        helpers += `def build_tree(data: str) -> Optional[TreeNode]:\n    if not data or data == "null":\n        return None\n    tokens = data.split(',')\n    tokens = [t.strip() for t in tokens]\n    if not tokens or tokens[0] == "null":\n        return None\n    root = TreeNode(int(tokens[0]))\n    queue = [root]\n    i = 1\n    while queue and i < len(tokens):\n        node = queue.pop(0)\n        if i < len(tokens) and tokens[i] != "null":\n            node.left = TreeNode(int(tokens[i]))\n            queue.append(node.left)\n        i += 1\n        if i < len(tokens) and tokens[i] != "null":\n            node.right = TreeNode(int(tokens[i]))\n            queue.append(node.right)\n        i += 1\n    return root\n\n`;
+        helpers += `def build_tree(data: str) -> Optional[TreeNode]:\n    if not data or data == "null":\n        return None\n    tokens = data.split()\n    if not tokens or tokens[0] == "null":\n        return None\n    root = TreeNode(int(tokens[0]))\n    queue = [root]\n    i = 1\n    while queue and i < len(tokens):\n        node = queue.pop(0)\n        if i < len(tokens) and tokens[i] != "null":\n            node.left = TreeNode(int(tokens[i]))\n            queue.append(node.left)\n        i += 1\n        if i < len(tokens) and tokens[i] != "null":\n            node.right = TreeNode(int(tokens[i]))\n            queue.append(node.right)\n        i += 1\n    return root\n\n`;
         helpers += `def print_tree(root: Optional[TreeNode]) -> None:\n    if not root:\n        return\n    queue = [root]\n    values = []\n    while queue:\n        node = queue.pop(0)\n        if node:\n            values.append(str(node.val))\n            queue.append(node.left)\n            queue.append(node.right)\n        else:\n            values.append("null")\n    while values and values[-1] == "null":\n        values.pop()\n    print(' '.join(values))\n\n`;
     }
     if (hasList) {
@@ -286,7 +286,7 @@ function generateJavaFullBoilerplate(problem: Problem): string {
 
     let helpers = '';
     if (hasTree) {
-        helpers += `    static TreeNode buildTree(String data) {\n        if (data == null || data.equals("null")) return null;\n        String[] tokens = data.split(",");\n        for (int i = 0; i < tokens.length; i++) tokens[i] = tokens[i].trim();\n        if (tokens.length == 0 || tokens[0].equals("null")) return null;\n        TreeNode root = new TreeNode(Integer.parseInt(tokens[0]));\n        Queue<TreeNode> queue = new LinkedList<>();\n        queue.offer(root);\n        int i = 1;\n        while (!queue.isEmpty() && i < tokens.length) {\n            TreeNode node = queue.poll();\n            if (i < tokens.length && !tokens[i].equals("null")) {\n                node.left = new TreeNode(Integer.parseInt(tokens[i]));\n                queue.offer(node.left);\n            }\n            i++;\n            if (i < tokens.length && !tokens[i].equals("null")) {\n                node.right = new TreeNode(Integer.parseInt(tokens[i]));\n                queue.offer(node.right);\n            }\n            i++;\n        }\n        return root;\n    }\n\n`;
+        helpers += `    static TreeNode buildTree(String data) {\n        if (data == null || data.equals("null")) return null;\n        String[] tokens = data.trim().split("\\\\s+");\n        if (tokens.length == 0 || tokens[0].equals("null")) return null;\n        TreeNode root = new TreeNode(Integer.parseInt(tokens[0]));\n        Queue<TreeNode> queue = new LinkedList<>();\n        queue.offer(root);\n        int i = 1;\n        while (!queue.isEmpty() && i < tokens.length) {\n            TreeNode node = queue.poll();\n            if (i < tokens.length && !tokens[i].equals("null")) {\n                node.left = new TreeNode(Integer.parseInt(tokens[i]));\n                queue.offer(node.left);\n            }\n            i++;\n            if (i < tokens.length && !tokens[i].equals("null")) {\n                node.right = new TreeNode(Integer.parseInt(tokens[i]));\n                queue.offer(node.right);\n            }\n            i++;\n        }\n        return root;\n    }\n\n`;
         helpers += `    static String printTree(TreeNode root) {\n        if (root == null) return "";\n        Queue<TreeNode> queue = new LinkedList<>();\n        queue.offer(root);\n        List<String> values = new ArrayList<>();\n        while (!queue.isEmpty()) {\n            TreeNode node = queue.poll();\n            if (node != null) {\n                values.add(String.valueOf(node.val));\n                queue.offer(node.left);\n                queue.offer(node.right);\n            } else {\n                values.add("null");\n            }\n        }\n        while (!values.isEmpty() && values.get(values.size() - 1).equals("null")) {\n            values.remove(values.size() - 1);\n        }\n        return String.join(" ", values);\n    }\n\n`;
     }
     if (hasList) {
@@ -306,8 +306,8 @@ function generateJavaScriptFullBoilerplate(problem: Problem): string {
     const inputParsingCode = inputs.map((i) => {
         if (i.type.endsWith('[]')) {
             const elementType = i.type.replace('[]', '');
-            const mapFunc = elementType === 'int' ? 'parseInt' : elementType === 'float' || elementType === 'double' ? 'parseFloat' : 'String';
-            const code = `const ${i.name} = inputLines[${lineIndex}].trim().split(/\\s+/).map(${mapFunc});`;
+            const mapFunc = elementType === 'int' ? 'x => parseInt(x)' : elementType === 'float' || elementType === 'double' ? 'x => parseFloat(x)' : 'String';
+            const code = `const line_${i.name} = inputLines[${lineIndex}].trim();\nconst ${i.name} = line_${i.name} ? line_${i.name}.split(/\\s+/).map(${mapFunc}) : [];`;
             lineIndex = typeof lineIndex === 'number' ? lineIndex + 1 : `${lineIndex} + 1`;
             return code;
         }
@@ -365,11 +365,11 @@ function generateJavaScriptFullBoilerplate(problem: Problem): string {
 
     let helpers = '';
     if (hasTree) {
-        helpers += `function buildTree(data) {\n    if (!data || data === "null") return null;\n    const tokens = data.split(',').map(t => t.trim());\n    if (tokens.length === 0 || tokens[0] === "null") return null;\n    const root = new TreeNode(parseInt(tokens[0]));\n    const queue = [root];\n    let i = 1;\n    while (queue.length > 0 && i < tokens.length) {\n        const node = queue.shift();\n        if (i < tokens.length && tokens[i] !== "null") {\n            node.left = new TreeNode(parseInt(tokens[i]));\n            queue.push(node.left);\n        }\n        i++;\n        if (i < tokens.length && tokens[i] !== "null") {\n            node.right = new TreeNode(parseInt(tokens[i]));\n            queue.push(node.right);\n        }\n        i++;\n    }\n    return root;\n}\n\n`;
+        helpers += `function buildTree(data) {\n    if (!data || data === "null") return null;\n    const tokens = data.trim().split(/\\s+/);\n    if (tokens.length === 0 || tokens[0] === "null") return null;\n    const root = new TreeNode(parseInt(tokens[0]));\n    const queue = [root];\n    let i = 1;\n    while (queue.length > 0 && i < tokens.length) {\n        const node = queue.shift();\n        if (i < tokens.length && tokens[i] !== "null") {\n            node.left = new TreeNode(parseInt(tokens[i]));\n            queue.push(node.left);\n        }\n        i++;\n        if (i < tokens.length && tokens[i] !== "null") {\n            node.right = new TreeNode(parseInt(tokens[i]));\n            queue.push(node.right);\n        }\n        i++;\n    }\n    return root;\n}\n\n`;
         helpers += `function printTree(root) {\n    if (!root) return;\n    const queue = [root];\n    const values = [];\n    while (queue.length > 0) {\n        const node = queue.shift();\n        if (node) {\n            values.push(node.val);\n            queue.push(node.left);\n            queue.push(node.right);\n        } else {\n            values.push("null");\n        }\n    }\n    while (values.length > 0 && values[values.length - 1] === "null") {\n        values.pop();\n    }\n    console.log(values.join(' '));\n}\n\n`;
     }
     if (hasList) {
-        helpers += `function buildList(data) {\n    if (!data) return null;\n    const nums = data.trim().split(/\\s+/).map(parseInt);\n    if (nums.length === 0) return null;\n    const head = new ListNode(nums[0]);\n    let tail = head;\n    for (let i = 1; i < nums.length; i++) {\n        tail.next = new ListNode(nums[i]);\n        tail = tail.next;\n    }\n    return head;\n}\n\n`;
+        helpers += `function buildList(data) {\n    if (!data) return null;\n    const nums = data.trim().split(/\\s+/).map(x => parseInt(x));\n    if (nums.length === 0) return null;\n    const head = new ListNode(nums[0]);\n    let tail = head;\n    for (let i = 1; i < nums.length; i++) {\n        tail.next = new ListNode(nums[i]);\n        tail = tail.next;\n    }\n    return head;\n}\n\n`;
         helpers += `function printList(head) {\n    const values = [];\n    while (head) {\n        values.push(head.val);\n        head = head.next;\n    }\n    console.log(values.join(' '));\n}\n\n`;
     }
 
@@ -384,31 +384,40 @@ function generateCFullBoilerplate(problem: Problem): string {
         int: 'int', float: 'float', double: 'double', string: 'char*', bool: 'bool',
         char: 'char', 'long long': 'long long', 'int[]': 'int*', 'float[]': 'float*', 'double[]': 'double*',
         'string[]': 'char**', 'bool[]': 'bool*', 'char[]': 'char*',
+        'int[][]': 'int**', 'float[][]': 'float**', 'double[][]': 'double**', 'string[][]': 'char***', 'bool[][]': 'bool**',
         TreeNode: 'struct TreeNode*', ListNode: 'struct ListNode*', AdjacencyMatrix: 'int**', AdjacencyList: 'int**'
     };
     const returnTypeString = cTypeMap[returnType] || returnType;
 
+    // Check if we need to declare a token variable (for array parsing or adjacency list)
+    const needsToken = inputs.some(i => 
+        i.type === 'int[]' || i.type === 'float[]' || i.type === 'double[]' || 
+        i.type === 'string[]' || i.type === 'bool[]' || i.type === 'AdjacencyList'
+    );
+
     const inputParsingCode = inputs.map(i => {
         const cType = cTypeMap[i.type] || i.type;
         if (cType === 'int*') {
-            return `        char line_${i.name}[10000];\n        fgets(line_${i.name}, sizeof(line_${i.name}), stdin);\n        int ${i.name}_size = 0;\n        int* ${i.name} = (int*)malloc(1000 * sizeof(int));\n        char* token = strtok(line_${i.name}, " \\t\\n");\n        while (token != NULL) {\n            ${i.name}[${i.name}_size++] = atoi(token);\n            token = strtok(NULL, " \\t\\n");\n        }`;
+            return `        char* line_${i.name} = (char*)malloc(1000000 * sizeof(char));\n        fgets(line_${i.name}, 1000000, stdin);\n        int ${i.name}_size = 0;\n        int* ${i.name} = (int*)malloc(100000 * sizeof(int));\n        token = strtok(line_${i.name}, " \\t\\n");\n        while (token != NULL) {\n            ${i.name}[${i.name}_size++] = atoi(token);\n            token = strtok(NULL, " \\t\\n");\n        }`;
         }
         else if (cType === 'float*') {
-            return `        char line_${i.name}[10000];\n        fgets(line_${i.name}, sizeof(line_${i.name}), stdin);\n        int ${i.name}_size = 0;\n        float* ${i.name} = (float*)malloc(1000 * sizeof(float));\n        char* token = strtok(line_${i.name}, " \\t\\n");\n        while (token != NULL) {\n            ${i.name}[${i.name}_size++] = atof(token);\n            token = strtok(NULL, " \\t\\n");\n        }`;
+            return `        char* line_${i.name} = (char*)malloc(1000000 * sizeof(char));\n        fgets(line_${i.name}, 1000000, stdin);\n        int ${i.name}_size = 0;\n        float* ${i.name} = (float*)malloc(100000 * sizeof(float));\n        token = strtok(line_${i.name}, " \\t\\n");\n        while (token != NULL) {\n            ${i.name}[${i.name}_size++] = atof(token);\n            token = strtok(NULL, " \\t\\n");\n        }`;
         }
         else if (cType === 'double*') {
-            return `        char line_${i.name}[10000];\n        fgets(line_${i.name}, sizeof(line_${i.name}), stdin);\n        int ${i.name}_size = 0;\n        double* ${i.name} = (double*)malloc(1000 * sizeof(double));\n        char* token = strtok(line_${i.name}, " \\t\\n");\n        while (token != NULL) {\n            ${i.name}[${i.name}_size++] = atof(token);\n            token = strtok(NULL, " \\t\\n");\n        }`;
+            return `        char* line_${i.name} = (char*)malloc(1000000 * sizeof(char));\n        fgets(line_${i.name}, 1000000, stdin);\n        int ${i.name}_size = 0;\n        double* ${i.name} = (double*)malloc(100000 * sizeof(double));\n        token = strtok(line_${i.name}, " \\t\\n");\n        while (token != NULL) {\n            ${i.name}[${i.name}_size++] = atof(token);\n            token = strtok(NULL, " \\t\\n");\n        }`;
         }
         else if (cType === 'char*') return `        char ${i.name}[1000];\n        scanf("%s", ${i.name});`;
-        else if (cType === 'struct TreeNode*') return `        char ${i.name}_str[10000];\n        scanf("%s", ${i.name}_str);\n        struct TreeNode* ${i.name} = buildTree(${i.name}_str);`;
-        else if (cType === 'struct ListNode*') return `        char ${i.name}_str[10000];\n        scanf("%s", ${i.name}_str);\n        struct ListNode* ${i.name} = buildList(${i.name}_str);`;
+        else if (cType === 'struct TreeNode*') return `        char* ${i.name}_str = (char*)malloc(1000000 * sizeof(char));\n        scanf("%s", ${i.name}_str);\n        struct TreeNode* ${i.name} = buildTree(${i.name}_str);`;
+        else if (cType === 'struct ListNode*') return `        char* ${i.name}_str = (char*)malloc(1000000 * sizeof(char));\n        scanf("%s", ${i.name}_str);\n        struct ListNode* ${i.name} = buildList(${i.name}_str);`;
         else if (i.type === 'AdjacencyMatrix') return `        int ${i.name}_size;\n        scanf("%d", &${i.name}_size);\n        int** ${i.name} = (int**)malloc(${i.name}_size * sizeof(int*));\n        for(int i=0; i<${i.name}_size; i++) {\n            ${i.name}[i] = (int*)malloc(${i.name}_size * sizeof(int));\n            for(int j=0; j<${i.name}_size; j++) scanf("%d", &${i.name}[i][j]);\n        }`;
-        else if (i.type === 'AdjacencyList') return `        int ${i.name}_vertices;\n        scanf("%d", &${i.name}_vertices);\n        // Create adjacency matrix (n x n)\n        int** ${i.name} = (int**)malloc(${i.name}_vertices * sizeof(int*));\n        for(int i=0; i<${i.name}_vertices; i++) {\n            ${i.name}[i] = (int*)calloc(${i.name}_vertices, sizeof(int));\n        }\n        // Read adjacency list and convert to matrix\n        for(int i=0; i<${i.name}_vertices; i++) {\n            char line[1000];\n            scanf(" ");\n            fgets(line, sizeof(line), stdin);\n            char* token = strtok(line, " \\t\\n");\n            while (token != NULL) {\n                int neighbor = atoi(token);\n                ${i.name}[i][neighbor] = 1;\n                token = strtok(NULL, " \\t\\n");\n            }\n        }`;
+        else if (i.type === 'AdjacencyList') return `        int ${i.name}_vertices;\n        scanf("%d", &${i.name}_vertices);\n        // Create adjacency matrix (n x n)\n        int** ${i.name} = (int**)malloc(${i.name}_vertices * sizeof(int*));\n        for(int i=0; i<${i.name}_vertices; i++) {\n            ${i.name}[i] = (int*)calloc(${i.name}_vertices, sizeof(int));\n        }\n        // Read adjacency list and convert to matrix\n        for(int i=0; i<${i.name}_vertices; i++) {\n            char* line = (char*)malloc(1000000 * sizeof(char));\n            scanf(" ");\n            fgets(line, 1000000, stdin);\n            token = strtok(line, " \\t\\n");\n            while (token != NULL) {\n                int neighbor = atoi(token);\n                ${i.name}[i][neighbor] = 1;\n                token = strtok(NULL, " \\t\\n");\n            }\n        }`;
         else return `        ${cType} ${i.name};\n        scanf("${cType === 'int' ? '%d' : cType === 'float' ? '%f' : cType === 'double' ? '%lf' : cType === 'char' ? '%c' : '%lld'}", &${i.name});`;
     }).join('\n');
 
     // For array return types in C, we need a returnSize parameter
     const needsReturnSize = returnType.endsWith('[]');
+    const is2DArray = returnType === 'int[][]' || returnType === 'float[][]' || returnType === 'double[][]' || 
+                      returnType === 'string[][]' || returnType === 'bool[][]';
     
     // Build arguments list, including size variables for graphs/arrays
     const buildArgsList = (includeReturnSize: boolean) => {
@@ -418,7 +427,13 @@ function generateCFullBoilerplate(problem: Problem): string {
             if (i.type.endsWith('[]') && cTypeMap[i.type]?.includes('*')) return `${i.name}, ${i.name}_size`;
             return i.name;
         });
-        if (includeReturnSize) args.push('&returnSize');
+        if (includeReturnSize) {
+            if (is2DArray) {
+                args.push('&returnSize', '&returnColumnSizes');
+            } else {
+                args.push('&returnSize');
+            }
+        }
         return args.join(', ');
     };
     
@@ -427,6 +442,8 @@ function generateCFullBoilerplate(problem: Problem): string {
     
     const functionCall = returnType === 'void' ? 
         `    ${functionName}(${argsListNoReturnSize});` :
+        is2DArray ?
+        `    int returnSize = 0;\n    int* returnColumnSizes = NULL;\n    ${returnTypeString} result = ${functionName}(${argsList});` :
         needsReturnSize ?
         `    int returnSize = 0;\n    ${returnTypeString} result = ${functionName}(${argsList});` :
         `    ${returnTypeString} result = ${functionName}(${argsListNoReturnSize});`;
@@ -434,6 +451,7 @@ function generateCFullBoilerplate(problem: Problem): string {
     const outputCode = returnType === 'void' ? '' :
         returnType === 'TreeNode' ? `    printTree(result);` :
         returnType === 'ListNode' ? `    printList(result);` :
+        is2DArray ? `    for(int i=0; i<returnSize; i++) {\n        for(int j=0; j<returnColumnSizes[i]; j++) {\n            if(j>0) printf(" ");\n            printf("%d", result[i][j]);\n        }\n        printf("\\n");\n    }` :
         returnType === 'AdjacencyMatrix' ? `    for(int i=0; i<size; i++) {\n        for(int j=0; j<size; j++) printf("%d ", result[i][j]);\n        printf("\\n");\n    }` :
         returnType === 'AdjacencyList' ? `    for(int i=0; i<vertices; i++) {\n        for(int j=0; j<neighbors_size; j++) printf("%d ", result[i][j]);\n        printf("\\n");\n    }` :
         returnType.endsWith('[]') ? `    for(int i=0; i<returnSize; i++) {\n        if(i>0) printf(" ");\n        printf("%d", result[i]);\n    }\n    printf("\\n");` :
@@ -451,7 +469,7 @@ function generateCFullBoilerplate(problem: Problem): string {
 
     let helpers = '';
     if (hasTree) {
-        helpers += `struct TreeNode* buildTree(char* data) {\n    if (!data || strcmp(data, "null") == 0) return NULL;\n    char* token = strtok(data, ",");\n    if (!token) return NULL;\n    struct TreeNode* root = (struct TreeNode*)malloc(sizeof(struct TreeNode));\n    root->val = atoi(token);\n    root->left = root->right = NULL;\n    struct TreeNode** queue = (struct TreeNode**)malloc(10000 * sizeof(struct TreeNode*));\n    int front = 0, rear = 0;\n    queue[rear++] = root;\n    while (front < rear) {\n        struct TreeNode* node = queue[front++];\n        token = strtok(NULL, ",");\n        if (token && strcmp(token, "null") != 0) {\n            node->left = (struct TreeNode*)malloc(sizeof(struct TreeNode));\n            node->left->val = atoi(token);\n            node->left->left = node->left->right = NULL;\n            queue[rear++] = node->left;\n        }\n        token = strtok(NULL, ",");\n        if (token && strcmp(token, "null") != 0) {\n            node->right = (struct TreeNode*)malloc(sizeof(struct TreeNode));\n            node->right->val = atoi(token);\n            node->right->left = node->right->right = NULL;\n            queue[rear++] = node->right;\n        }\n    }\n    free(queue);\n    return root;\n}\n\n`;
+        helpers += `struct TreeNode* buildTree(char* data) {\n    if (!data || strcmp(data, "null") == 0) return NULL;\n    char* token = strtok(data, " \\t\\n");\n    if (!token) return NULL;\n    struct TreeNode* root = (struct TreeNode*)malloc(sizeof(struct TreeNode));\n    root->val = atoi(token);\n    root->left = root->right = NULL;\n    struct TreeNode** queue = (struct TreeNode**)malloc(10000 * sizeof(struct TreeNode*));\n    int front = 0, rear = 0;\n    queue[rear++] = root;\n    while (front < rear) {\n        struct TreeNode* node = queue[front++];\n        token = strtok(NULL, " \\t\\n");\n        if (token && strcmp(token, "null") != 0) {\n            node->left = (struct TreeNode*)malloc(sizeof(struct TreeNode));\n            node->left->val = atoi(token);\n            node->left->left = node->left->right = NULL;\n            queue[rear++] = node->left;\n        }\n        token = strtok(NULL, " \\t\\n");\n        if (token && strcmp(token, "null") != 0) {\n            node->right = (struct TreeNode*)malloc(sizeof(struct TreeNode));\n            node->right->val = atoi(token);\n            node->right->left = node->right->right = NULL;\n            queue[rear++] = node->right;\n        }\n    }\n    free(queue);\n    return root;\n}\n\n`;
         helpers += `void printTree(struct TreeNode* root) {\n    if (!root) return;\n    struct TreeNode** queue = (struct TreeNode**)malloc(10000 * sizeof(struct TreeNode*));\n    int front = 0, rear = 0;\n    queue[rear++] = root;\n    int* values = (int*)malloc(10000 * sizeof(int));\n    int valueCount = 0;\n    while (front < rear) {\n        struct TreeNode* node = queue[front++];\n        if (node) {\n            values[valueCount++] = node->val;\n            queue[rear++] = node->left;\n            queue[rear++] = node->right;\n        } else {\n            values[valueCount++] = -1; // sentinel for null\n        }\n    }\n    while (valueCount > 0 && values[valueCount-1] == -1) valueCount--;\n    for (int i = 0; i < valueCount; i++) {\n        if (i > 0) printf(" ");\n        if (values[i] == -1) printf("null");\n        else printf("%d", values[i]);\n    }\n    printf("\\n");\n    free(queue);\n    free(values);\n}\n\n`;
     }
     if (hasList) {
@@ -469,7 +487,7 @@ ${structs}${helpers}// User Code Starts
 // User Code Ends
 
 int main() {
-${inputParsingCode ? inputParsingCode + '\n' : ''}
+${needsToken ? '    char* token = NULL;\n' : ''}${inputParsingCode ? inputParsingCode + '\n' : ''}
 ${functionCall}
 ${outputCode}
     return 0;

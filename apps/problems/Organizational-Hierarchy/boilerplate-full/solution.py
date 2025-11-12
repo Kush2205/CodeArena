@@ -8,7 +8,7 @@ class TreeNode:
 def build_tree(data: str) -> Optional[TreeNode]:
     if not data or data == "null":
         return None
-    tokens = data.split(',')
+    tokens = data.split(' ')
     tokens = [t.strip() for t in tokens]
     if not tokens or tokens[0] == "null":
         return None
