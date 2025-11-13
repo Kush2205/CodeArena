@@ -158,6 +158,7 @@ export async function GET(
           );
 
           newTestCasesPassed = newlyPassedTestCases.length;
+          const previouslyPassedCount = alreadyPassedNumbers.size;
 
           // Get problem to calculate points per test case
           const problem = await prisma.problem.findUnique({
@@ -167,14 +168,24 @@ export async function GET(
             },
           });
 
-          // Calculate points per test case based on TOTAL test cases in submission (not just visible ones in DB)
-          // This ensures points are distributed across all test cases (including hidden ones)
-          const pointsPerTestCase = problem && submission.totalTestCases
-            ? Math.floor(problem.totalPoints / submission.totalTestCases)
-            : 10; // fallback to 10 if problem not found
-
-          // Award points only for newly passed test cases
-          points = newTestCasesPassed * pointsPerTestCase;
+          // Calculate points based on newly passed test cases
+          // If all test cases are now passed, award full points
+          // Otherwise, distribute points proportionally with rounding up to avoid losing points
+          if (problem && submission.totalTestCases) {
+            const totalPassed = previouslyPassedCount + newTestCasesPassed;
+            if (totalPassed === submission.totalTestCases) {
+              // All test cases passed - award full points minus what was already earned
+              const previousPoints = submission.points || 0;
+              points = problem.totalPoints - previousPoints;
+            } else {
+              // Partial pass - use ceiling to avoid losing points due to rounding
+              const pointsPerTestCase = Math.ceil(problem.totalPoints / submission.totalTestCases);
+              points = newTestCasesPassed * pointsPerTestCase;
+            }
+          } else {
+            // Fallback if problem not found
+            points = newTestCasesPassed * 10;
+          }
 
           // Record the newly passed test cases
           if (newlyPassedTestCases.length > 0) {
