@@ -158,7 +158,6 @@ export async function GET(
           );
 
           newTestCasesPassed = newlyPassedTestCases.length;
-          const previouslyPassedCount = alreadyPassedNumbers.size;
 
           // Get problem to calculate points per test case
           const problem = await prisma.problem.findUnique({
@@ -171,11 +170,37 @@ export async function GET(
           // Calculate points based on newly passed test cases
           // If all test cases are now passed, award full points
           // Otherwise, distribute points proportionally with rounding up to avoid losing points
-          if (problem && submission.totalTestCases) {
-            const totalPassed = previouslyPassedCount + newTestCasesPassed;
-            if (totalPassed === submission.totalTestCases) {
+          if (problem && submission.totalTestCases && newTestCasesPassed > 0) {
+            // Get total unique test cases ever passed by this user for this problem
+            const allPassedTestCases = await prisma.passedTestCase.findMany({
+              where: {
+                userId: submission.userId,
+                problemId: submission.problemId,
+                contestId: contestContext,
+              },
+              select: {
+                testCaseNumber: true,
+              },
+            });
+            
+            const totalPassedCount = allPassedTestCases.length + newTestCasesPassed;
+            
+            if (totalPassedCount === submission.totalTestCases) {
               // All test cases passed - award full points minus what was already earned
-              const previousPoints = submission.points || 0;
+              // Get sum of all points earned for this problem so far
+              const previousSubmissions = await prisma.submission.findMany({
+                where: {
+                  userId: submission.userId,
+                  problemId: submission.problemId,
+                  contestId: contestContext,
+                  id: { not: submissionId }, // Exclude current submission
+                },
+                select: {
+                  points: true,
+                },
+              });
+              
+              const previousPoints = previousSubmissions.reduce((sum, sub) => sum + sub.points, 0);
               points = problem.totalPoints - previousPoints;
             } else {
               // Partial pass - use ceiling to avoid losing points due to rounding
@@ -183,7 +208,7 @@ export async function GET(
               points = newTestCasesPassed * pointsPerTestCase;
             }
           } else {
-            // Fallback if problem not found
+            // Fallback if problem not found or no new test cases passed
             points = newTestCasesPassed * 10;
           }
 
